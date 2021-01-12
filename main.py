@@ -58,7 +58,7 @@ Xqra01 = 5.9276e-05  # Reaktancja niepodlegajaca wypieraniu pradu, niesprowadzon
 Xpr = 0.00017001  # Reaktancja podlegajaca wypieraniu pradu, sprowadzona
 
 pi = math.pi
-limit = 5
+limit = 100
 kls = np.arange(-limit, limit + 1)
 klr = np.arange(-limit, limit + 1)
 gs = np.arange(-limit, limit + 1)
@@ -125,15 +125,115 @@ y = W / tauQs
 print_var_value(y, 'y')
 kyv = np.sin((vs / p)) * y * pi / 2
 print_var_value(kyv, 'kyv')
-ksv = np.sin(vs*bss/ds) / (vs*bss/ds)
+ksv = np.sin(vs * bss / ds) / (vs * bss / ds)
 print_var_value(ksv, 'ksv')
 kfv = kqv * kyv * ksv
 print_var_value(kfv, 'kfv')
-ky1 = np.sin((p/p) * y * (pi / 2))
-print_var_value(ky1,'ky1')
-ks1 = np.sin(p*bss/ds) / (p*bss/ds)
+ky1 = np.sin((p / p) * y * (pi / 2))
+print_var_value(ky1, 'ky1')
+ks1 = np.sin(p * bss / ds) / (p * bss / ds)
 print_var_value(ks1, 'ks1')
-kq1 = np.sin((p/p) * (pi/6))/(qc*np.sin((p/p)* (pi/(6*qc))))
+kq1 = np.sin((p / p) * (pi / 6)) / (qc * np.sin((p / p) * (pi / (6 * qc))))
 print_var_value(kq1, 'kq1')
 kfs = ky1 * ks1 * kq1
 print_var_value(kfs, 'kfs')
+Bfv = 1.7 * float(1e-3) * (N * kfv * Is) / (abs(vs) * delta * kCv * km)
+print_var_value(Bfv, 'Bfv')
+kls = kls[kls != 0]
+print_var_value(kls, 'kls')
+vls = kls * Qs + p
+print_var_value(vls, 'vls')
+x = 3 * q * kls * (1 - y) + kls + 1
+print_var_value(x, 'x')
+a = (-1) ** x
+print_var_value(a, 'a')
+ms = (bss / delta - 0.7) / 3.3
+print_var_value(ms, 'ms')
+beta = 0.43 * (1 - np.exp(-ms))
+print_var_value(beta, 'beta')
+kCs = ts / (ts - 1.6 * beta * bss)
+print_var_value(kCs, 'kCs')
+gammas = bss / ds
+print_var_value(gammas, 'gammas')
+Fks = 2 * np.sin(1.6 * np.abs(kls) * gammas * pi) / (pi * np.abs(kls) * (1 - (1.6 * kls * gammas) ** 2))
+print_var_value(Fks, 'Fks')
+Blk = a * (beta / 2) * kCs * Fks * Bdelta
+print_var_value(Blk, 'Blk')
+
+sum_Bs = Bfv
+rzad_vs = vs
+
+print_var_value(rzad_vs, 'rzad_vs')
+print_var_value(vls, 'vls')
+
+# for i, item in enumerate(rzad_vs):
+#     x = np.where(vls == item)[0]
+#     if x.size != 0:
+#         vls_ind = x[0]
+#         print(vls_ind, " : ", vls[vls_ind])
+#         sum_Bs[i] = np.sqrt(sum_Bs[i]**2 + Blk[vls_ind]**2 +
+#                             2 * sum_Bs[i] * Blk[vls_ind]*sinfi)
+#
+# vls_not_in_rzad_vs = np.where(vls == rzad_vs)
+# print(vls_not_in_rzad_vs)
+
+rzad_vs = np.hstack((vs, vls))
+sum_Bs = np.hstack((Bfv, Blk))
+
+print('*' * 50)
+print_var_value(rzad_vs, 'rzad_vs')
+print_var_value(sum_Bs, 'sum_Bs')
+
+# unique_vals_vs = np.array([])
+# unique_vals_Bs = np.array([])
+
+# zrobić to whilem, zrobić kopię arraya i z niej usuwac, a reszte dodawac do jakiejs zmiennej typu temp
+# robic tak az do konca arraya
+# dodawac duplikaty
+# za pomocą tego polecenia trzeba w while usuwac indeksy z kopii
+# rzad_vs = rzad_vs[np.where(rzad_vs != -34)[0]]
+temp_vs = np.copy(rzad_vs)
+new_vs = np.array([])
+temp_Bs = np.array([])
+i = 0
+
+
+while True:
+    item = temp_vs[0]
+    indices = np.where(rzad_vs == item)[0]
+
+    temp_Bs = np.hstack((temp_Bs, np.sum(sum_Bs[indices])))
+    new_vs = np.hstack((new_vs, item))
+    temp_vs = temp_vs[np.where(temp_vs != item)[0]]
+    if temp_vs.size == 0:
+        break
+
+np.savetxt("rzad_vs_Debug.csv", rzad_vs, fmt='%.3e', delimiter = ",")
+np.savetxt("sum_Bs_Debug.csv", sum_Bs, fmt='%.3e', delimiter = ",")
+np.savetxt("new_vs_Debug.csv", new_vs, fmt='%.3e', delimiter = ",")
+np.savetxt("temp_Bs_Debug.csv", temp_Bs, fmt='%.3e', delimiter = ",")
+
+
+
+
+# with open('debug.txt', 'w') as f:
+#     print(rzad_vs, file=f)
+#     print(sum_Bs, file=f)
+#     print('*' * 50)
+#     print(new_vs, file=f)
+#     print(temp_Bs, file=f)
+
+
+
+# while True:
+#     print(rzad_vs)
+
+# for i, item in enumerate(rzad_vs):
+#     # print(i, item)
+#     ind = np.where(rzad_vs[i+1:] == item)[0]
+#     if ind.size != 0:
+#         dupl_ind = ind + (i+1)
+#         print(dupl_ind, rzad_vs[dupl_ind])
+#
+# if x.size != 0:
+#     print(x[0])
