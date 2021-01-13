@@ -58,7 +58,7 @@ Xqra01 = 5.9276e-05  # Reaktancja niepodlegajaca wypieraniu pradu, niesprowadzon
 Xpr = 0.00017001  # Reaktancja podlegajaca wypieraniu pradu, sprowadzona
 
 pi = math.pi
-limit = 100
+limit = 5
 kls = np.arange(-limit, limit + 1)
 klr = np.arange(-limit, limit + 1)
 gs = np.arange(-limit, limit + 1)
@@ -192,48 +192,146 @@ print_var_value(sum_Bs, 'sum_Bs')
 # dodawac duplikaty
 # za pomocą tego polecenia trzeba w while usuwac indeksy z kopii
 # rzad_vs = rzad_vs[np.where(rzad_vs != -34)[0]]
-temp_vs = np.copy(rzad_vs)
-new_vs = np.array([])
-temp_Bs = np.array([])
+# temp_Bs = np.array([])
+# temp_vs = np.copy(rzad_vs)
+# new_vs = np.array([])
+# i = 0
+
+
 i = 0
 
+# rzad_vs = np.array([3,5,7,8,12,3,5,3,2,3,1,18,18])
+# sum_Bs = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1])
 
-while True:
-    item = temp_vs[0]
-    indices = np.where(rzad_vs == item)[0]
+print(rzad_vs)
+print(sum_Bs)
+while i < rzad_vs.size:
+    indices = np.where(rzad_vs[i] == rzad_vs)[0]
+    idx_to_del = indices[1:]
+    if indices.size == 2:
+        Bs1, Bs2 = sum_Bs[i], sum_Bs[idx_to_del[0]]
+        sum_Bs[i] = np.sqrt(Bs1 ** 2 + Bs2 ** 2 + 2 * Bs1 * Bs2 * sinfi)
+    else:
+        for j in idx_to_del:
+            sum_Bs[i] = sum_Bs[i] + sum_Bs[j]
+    rzad_vs = np.delete(rzad_vs, idx_to_del)
+    sum_Bs = np.delete(sum_Bs, idx_to_del)
+    i += 1
 
-    temp_Bs = np.hstack((temp_Bs, np.sum(sum_Bs[indices])))
-    new_vs = np.hstack((new_vs, item))
-    temp_vs = temp_vs[np.where(temp_vs != item)[0]]
-    if temp_vs.size == 0:
-        break
+print(rzad_vs)
+print(sum_Bs)
 
-np.savetxt("rzad_vs_Debug.csv", rzad_vs, fmt='%.3e', delimiter = ",")
-np.savetxt("sum_Bs_Debug.csv", sum_Bs, fmt='%.3e', delimiter = ",")
-np.savetxt("new_vs_Debug.csv", new_vs, fmt='%.3e', delimiter = ",")
-np.savetxt("temp_Bs_Debug.csv", temp_Bs, fmt='%.3e', delimiter = ",")
+vs = rzad_vs
+Bv = sum_Bs
 
+frv = fs * np.abs(1 - (vs / p) * (1 - s_p))
+print_var_value(frv, 'frv')
+Deltav = 1
+Bvs = Deltav * Bv
 
+Psv = ((roFe * float(1e3) * dr ** 2 * lFe * pCl * kCr) /
+       (2 * kFe * np.abs(vs))) * ((frv / 50) ** 2) * ((Bvs / 1.5) ** 2) * float(1e-9)
+Ps = np.sum(Psv)
+print_var_value(Ps, 'Ps')
 
+ks = 1 - 0.38 * (bsr / delta) ** (0.28)
+Bsv = Bvs * ks * kCr
+PAlv = (850 * Bsv ** 2 * frv ** 1.5 * bsr * ((pi * dr) / (2 * np.abs(vs))) * lFe *
+        Qr * kCr * float(1e-9))
+PAl = np.sum(PAlv)
+print_var_value(PAl, 'PAl')
 
-# with open('debug.txt', 'w') as f:
-#     print(rzad_vs, file=f)
-#     print(sum_Bs, file=f)
-#     print('*' * 50)
-#     print(new_vs, file=f)
-#     print(temp_Bs, file=f)
+gr = gr[np.where(gr != 0)[0]]
+print_var_value(gr, 'gr')
 
+vrp = p + gr * Qr
+kCv = np.ones(vrp.shape)
+for i, item in enumerate(vrp):
+    if abs(item) < (Qr - p):
+        kCv[i] = kC
+print(kCv)
 
+ksvr = (np.sin(vrp * bsr / dr)) / (vrp * bsr / dr)
+ksr = np.sin(bsr / (2 * dr)) / (bsr / (2 * dr))
+bsq = tr
+alfasq = 2 * bsq * p / dr
+ksq = 2 * np.sin(alfasq / 2) / alfasq
+kfr = ksr * ksq
+Ir = np.sqrt(Isph ** 2 + I0ph ** 2 - 2 * I0ph * Isph * sinfi)
 
-# while True:
-#     print(rzad_vs)
+Bfvp = ((np.sqrt(2) * m * mi0 * N * kfs * ksvr) / (
+        pi * (delta / 1000) * kCv * np.abs(vrp) * km)) * Ir
 
-# for i, item in enumerate(rzad_vs):
-#     # print(i, item)
-#     ind = np.where(rzad_vs[i+1:] == item)[0]
-#     if ind.size != 0:
-#         dupl_ind = ind + (i+1)
-#         print(dupl_ind, rzad_vs[dupl_ind])
-#
-# if x.size != 0:
-#     print(x[0])
+vrs = np.zeros(vs.size * gr.size)
+frs = np.zeros(vs.size * gr.size)
+for i, item in enumerate(vs):
+    for j, gr_item in enumerate(gr):
+        vrs[i * gr.size + j] = item + gr_item * Qr
+        frs[i * gr.size + j] = fs * np.abs(1 + (gr_item * Qr / p) * (1 - s_p))
+
+print(vrs)
+print(frs)
+
+ksvr = (np.sin(vrs * bsr / dr)) / (vrs * bsr / dr)
+kCv = np.ones(vrs.size)
+for i, item in enumerate(vrs):
+    if abs(item) < (Qr - p):
+        kCv[i] = kCr
+print(kCv)
+
+alfaQv = 2 * pi * vs / Qr
+ktr = (tr - bsr) / tr
+
+Uicv = (np.sqrt(2) * pi ** 2 * frv * (lFe / 1000) *
+        ((dr / 1000) / Qr) * Bv * np.sin(vs * pi * ktr / Qr))
+
+gammar_teta = gammar_0 * (kgamma + 25) / (kgamma + tetar)
+Rc = (pi * dc / 1000) / (Qr * gammar_teta * sc)
+przekladnia = (2 * N * kfs / kfr) ** 2 * (3 / Qr)
+Rc = Rc * przekladnia
+kRv = 0.01 * h * np.sqrt(frv)
+Rpr = ((lpr / float(1e3)) / (gammar_teta * spr))
+Rpr = Rpr * przekladnia
+Rprv = Rpr * kRv
+Rcv = 2 * Rc + Rprv * (2 * np.sin(alfaQv / 2)) ** 2
+Ldeltac = (mi0 * (lFe / 1000) * ((tr - bsr) / 1000)) / ((delta / 1000) * kCs)
+
+kX = np.ones(frv.size)
+for i, value in enumerate(frv):
+    if h >= (150 / np.sqrt(value)):
+        kX[i] = 150 / (h * np.sqrt(value))
+
+frpodst = np.min(frv)
+Lqra01 = Xqra01 / (2*pi*frpodst)
+Lqra01 = Lqra01 * przekladnia
+Lpr = Xpr / (2*pi*frpodst)
+Lpr = Lpr * przekladnia
+LQrv = Lqra01 + Lpr * kX
+LQcv = LQrv * (2*np.sin(alfaQv/2))**2
+Icv = Uicv / (np.sqrt(Rcv**2 + (2*pi*frv * (LQcv + Ldeltac)**2)))
+Iprv = Icv * 2 * np.sin(alfaQv / 2)
+
+    # np.savetxt("rzad_vs_Debug.csv", rzad_vs, fmt='%.3e', delimiter = ",")
+    # np.savetxt("sum_Bs_Debug.csv", sum_Bs, fmt='%.3e', delimiter = ",")
+    # np.savetxt("new_vs_Debug.csv", new_vs, fmt='%.3e', delimiter = ",")
+    # np.savetxt("temp_Bs_Debug.csv", temp_Bs, fmt='%.3e', delimiter = ",")
+
+    # with open('debug.txt', 'w') as f:
+    #     print(rzad_vs, file=f)
+    #     print(sum_Bs, file=f)
+    #     print('*' * 50)
+    #     print(new_vs, file=f)
+    #     print(temp_Bs, file=f)
+
+    # while True:
+    #     print(rzad_vs)
+
+    # for i, item in enumerate(rzad_vs):
+    #     # print(i, item)
+    #     ind = np.where(rzad_vs[i+1:] == item)[0]
+    #     if ind.size != 0:
+    #         dupl_ind = ind + (i+1)
+    #         print(dupl_ind, rzad_vs[dupl_ind])
+    #
+    # if x.size != 0:
+    #     print(x[0])
