@@ -58,7 +58,7 @@ Xqra01 = 5.9276e-05  # Reaktancja niepodlegajaca wypieraniu pradu, niesprowadzon
 Xpr = 0.00017001  # Reaktancja podlegajaca wypieraniu pradu, sprowadzona
 
 pi = math.pi
-limit = 5
+limit = 100
 kls = np.arange(-limit, limit + 1)
 klr = np.arange(-limit, limit + 1)
 gs = np.arange(-limit, limit + 1)
@@ -302,36 +302,109 @@ for i, value in enumerate(frv):
         kX[i] = 150 / (h * np.sqrt(value))
 
 frpodst = np.min(frv)
-Lqra01 = Xqra01 / (2*pi*frpodst)
+Lqra01 = Xqra01 / (2 * pi * frpodst)
 Lqra01 = Lqra01 * przekladnia
-Lpr = Xpr / (2*pi*frpodst)
+Lpr = Xpr / (2 * pi * frpodst)
 Lpr = Lpr * przekladnia
 LQrv = Lqra01 + Lpr * kX
-LQcv = LQrv * (2*np.sin(alfaQv/2))**2
-Icv = Uicv / (np.sqrt(Rcv**2 + (2*pi*frv * (LQcv + Ldeltac)**2)))
+LQcv = LQrv * (2 * np.sin(alfaQv / 2)) ** 2
+Icv = Uicv / (np.sqrt(Rcv ** 2 + (2 * pi * frv * (LQcv + Ldeltac) ** 2)))
 Iprv = Icv * 2 * np.sin(alfaQv / 2)
 
-    # np.savetxt("rzad_vs_Debug.csv", rzad_vs, fmt='%.3e', delimiter = ",")
-    # np.savetxt("sum_Bs_Debug.csv", sum_Bs, fmt='%.3e', delimiter = ",")
-    # np.savetxt("new_vs_Debug.csv", new_vs, fmt='%.3e', delimiter = ",")
-    # np.savetxt("temp_Bs_Debug.csv", temp_Bs, fmt='%.3e', delimiter = ",")
+gr_len = gr.size
+Bfvrs = np.zeros(vs.size * gr_len)
+for i, vs_item in enumerate(vs):
+    for j, gr_item in enumerate(gr):
+        indx = i * gr_len + j
+        Bfvrs[indx] = ((mi0 * Qr * ksvr[indx]) / np.sqrt(2) * pi *
+                       (delta / 1000) * kCv[indx] * np.abs(vrs[indx]) * km) * Iprv[i]
 
-    # with open('debug.txt', 'w') as f:
-    #     print(rzad_vs, file=f)
-    #     print(sum_Bs, file=f)
-    #     print('*' * 50)
-    #     print(new_vs, file=f)
-    #     print(temp_Bs, file=f)
+print_var_value(vrs, 'vrs')
+print_var_value(Bfvrs, 'Bfvrs')
 
-    # while True:
-    #     print(rzad_vs)
+klr = klr[np.where(klr != 0)]
+print_var_value(klr, 'klr')
 
-    # for i, item in enumerate(rzad_vs):
-    #     # print(i, item)
-    #     ind = np.where(rzad_vs[i+1:] == item)[0]
-    #     if ind.size != 0:
-    #         dupl_ind = ind + (i+1)
-    #         print(dupl_ind, rzad_vs[dupl_ind])
-    #
-    # if x.size != 0:
-    #     print(x[0])
+vrlp = p + klr * Qr
+print_var_value(vrlp, 'vrlp')
+gammasr = bsr / tr
+print_var_value(gammasr, 'gammasr')
+
+Fkr = (2 * np.sin(1.6 * np.abs(klr) * gammasr * pi)) / (pi * np.abs(klr)
+                                                        * (1 - (1.6 * np.abs(klr) * gammasr) ** 2))
+print_var_value(Fkr, 'Fkr')
+
+mr = (bsr / delta - 0.7) / 3.3
+print_var_value(mr, 'mr')
+betar = 0.43 * (1 - np.exp(-mr))
+print_var_value(betar, 'betar')
+
+Blkrp = (betar / 2) * kCr * Fkr * Bdelta
+
+print_var_value(vrlp, 'vrlp')
+print_var_value(Blkrp, 'Blrkp')
+
+# from timing import Timing
+# import time
+# Timing.start_program()
+
+import time
+
+vlrv = np.array([])
+
+start_time = time.time()
+for i, item in enumerate(vls):
+    vlrv = np.hstack((vlrv, item + klr * Qr))
+print_var_value(vlrv, 'vlrv')
+print("Elapsed time: ", time.time() - start_time)
+
+start_time = time.time()
+vlrv = np.zeros(vls.size * klr.size)
+klr_len = klr.size
+for i, item_vls in enumerate(vls):
+    for j, item_klr in enumerate(klr):
+        vlrv[klr_len*i + j] = item_vls + item_klr * Qr
+print_var_value(vlrv, 'vlrv')
+print("Elapsed time: ", time.time() - start_time)
+
+epsilon = 3*q*(1-y)
+
+
+
+
+# print_var_value(vlrv, 'vlrv')
+# print(time.time_ns() - start_time)
+start_time = time.time()
+i = 0
+
+# while True:
+#     if i > 10000000:
+#         break
+#     i += 1
+# print(time.time() - start_time)
+
+
+# np.savetxt("rzad_vs_Debug.csv", rzad_vs, fmt='%.3e', delimiter = ",")
+# np.savetxt("sum_Bs_Debug.csv", sum_Bs, fmt='%.3e', delimiter = ",")
+# np.savetxt("new_vs_Debug.csv", new_vs, fmt='%.3e', delimiter = ",")
+# np.savetxt("temp_Bs_Debug.csv", temp_Bs, fmt='%.3e', delimiter = ",")
+
+# with open('debug.txt', 'w') as f:
+#     print(rzad_vs, file=f)
+#     print(sum_Bs, file=f)
+#     print('*' * 50)
+#     print(new_vs, file=f)
+#     print(temp_Bs, file=f)
+
+# while True:
+#     print(rzad_vs)
+
+# for i, item in enumerate(rzad_vs):
+#     # print(i, item)
+#     ind = np.where(rzad_vs[i+1:] == item)[0]
+#     if ind.size != 0:
+#         dupl_ind = ind + (i+1)
+#         print(dupl_ind, rzad_vs[dupl_ind])
+#
+# if x.size != 0:
+#     print(x[0])
