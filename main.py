@@ -2,13 +2,13 @@ import math
 import numpy as np
 import sys
 
+from utils import Utils
 
-# from decimal import *
-
-
+# TODO: MOVE TO UTILS
 def print_var_value(var, name: str):
     print(f"{name} = {var}")
 
+# TODO: SPLIT INTO SEVERAL SMALLER FUNCTIONS
 
 p = 2  # Liczba par biegunów [-]
 Qs = 36  # Liczba żłobków stojana [-]
@@ -58,7 +58,7 @@ Xqra01 = 5.9276e-05  # Reaktancja niepodlegajaca wypieraniu pradu, niesprowadzon
 Xpr = 0.00017001  # Reaktancja podlegajaca wypieraniu pradu, sprowadzona
 
 pi = math.pi
-limit = 100
+limit = 5
 kls = np.arange(-limit, limit + 1)
 klr = np.arange(-limit, limit + 1)
 gs = np.arange(-limit, limit + 1)
@@ -69,8 +69,7 @@ print_var_value(klr, 'klr')
 print_var_value(gs, 'gs')
 print_var_value(gr, 'gr')
 
-# getcontext().prec = 3
-print('*' * 50)
+print("*" * 50)
 q = Qs / (2 * m * p)
 print(q / 2.3)
 print_var_value(q, 'q')
@@ -109,8 +108,7 @@ for i, item in enumerate(vs):
     if abs(item) < (Qs - p):
         kCv[i] = kC
 print(kCv)
-# test = [x for x in vs if abs(x) < (Qs-p)]
-# print(test)
+
 if math.floor(q) == q:
     qc = Qs / (s * p)
 else:
@@ -123,7 +121,7 @@ tauQs = Qs / (2 * p)
 print_var_value(tauQs, 'tauQs')
 y = W / tauQs
 print_var_value(y, 'y')
-kyv = np.sin((vs / p)) * y * pi / 2
+kyv = np.sin((vs / p) * y * (pi / 2))
 print_var_value(kyv, 'kyv')
 ksv = np.sin(vs * bss / ds) / (vs * bss / ds)
 print_var_value(ksv, 'ksv')
@@ -166,45 +164,17 @@ rzad_vs = vs
 print_var_value(rzad_vs, 'rzad_vs')
 print_var_value(vls, 'vls')
 
-# for i, item in enumerate(rzad_vs):
-#     x = np.where(vls == item)[0]
-#     if x.size != 0:
-#         vls_ind = x[0]
-#         print(vls_ind, " : ", vls[vls_ind])
-#         sum_Bs[i] = np.sqrt(sum_Bs[i]**2 + Blk[vls_ind]**2 +
-#                             2 * sum_Bs[i] * Blk[vls_ind]*sinfi)
-#
-# vls_not_in_rzad_vs = np.where(vls == rzad_vs)
-# print(vls_not_in_rzad_vs)
-
 rzad_vs = np.hstack((vs, vls))
-sum_Bs = np.hstack((Bfv, Blk))
+sum_Bs = np.hstack((Bfv, np.abs(Blk)))
 
 print('*' * 50)
 print_var_value(rzad_vs, 'rzad_vs')
 print_var_value(sum_Bs, 'sum_Bs')
 
-# unique_vals_vs = np.array([])
-# unique_vals_Bs = np.array([])
-
-# zrobić to whilem, zrobić kopię arraya i z niej usuwac, a reszte dodawac do jakiejs zmiennej typu temp
-# robic tak az do konca arraya
-# dodawac duplikaty
-# za pomocą tego polecenia trzeba w while usuwac indeksy z kopii
-# rzad_vs = rzad_vs[np.where(rzad_vs != -34)[0]]
-# temp_Bs = np.array([])
-# temp_vs = np.copy(rzad_vs)
-# new_vs = np.array([])
-# i = 0
-
-
 i = 0
-
-# rzad_vs = np.array([3,5,7,8,12,3,5,3,2,3,1,18,18])
-# sum_Bs = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1])
-
 print(rzad_vs)
 print(sum_Bs)
+
 while i < rzad_vs.size:
     indices = np.where(rzad_vs[i] == rzad_vs)[0]
     idx_to_del = indices[1:]
@@ -218,8 +188,8 @@ while i < rzad_vs.size:
     sum_Bs = np.delete(sum_Bs, idx_to_del)
     i += 1
 
-print(rzad_vs)
-print(sum_Bs)
+print(rzad_vs, 'rzad_vs')
+print(sum_Bs, 'sum_Bs')
 
 vs = rzad_vs
 Bv = sum_Bs
@@ -241,26 +211,49 @@ PAlv = (850 * Bsv ** 2 * frv ** 1.5 * bsr * ((pi * dr) / (2 * np.abs(vs))) * lFe
 PAl = np.sum(PAlv)
 print_var_value(PAl, 'PAl')
 
+#
+#
+#
+#
+#  WIRNIK
+#
+#
+#
+#
+
+
+print("*" * 50)
+print("*" * 20, "WIRNIK".center(10), "*" * 20)
+print("*" * 50)
+
 gr = gr[np.where(gr != 0)[0]]
 print_var_value(gr, 'gr')
 
 vrp = p + gr * Qr
+print_var_value(vrp, 'vrp')
 kCv = np.ones(vrp.shape)
 for i, item in enumerate(vrp):
-    if abs(item) < (Qr - p):
-        kCv[i] = kC
-print(kCv)
+    if abs(item) <= (Qr - p):
+        kCv[i] = kCr
+print_var_value(kCv, 'kCv')
 
 ksvr = (np.sin(vrp * bsr / dr)) / (vrp * bsr / dr)
+print_var_value(ksvr, 'ksvr')
 ksr = np.sin(bsr / (2 * dr)) / (bsr / (2 * dr))
+print_var_value(ksr, 'ksr')
 bsq = tr
+print_var_value(bsq, 'bsq')
 alfasq = 2 * bsq * p / dr
+print_var_value(alfasq, 'alfasq')
 ksq = 2 * np.sin(alfasq / 2) / alfasq
+print_var_value(ksq, 'ksq')
 kfr = ksr * ksq
+print_var_value(kfr, 'kfr')
 Ir = np.sqrt(Isph ** 2 + I0ph ** 2 - 2 * I0ph * Isph * sinfi)
-
+print_var_value(Ir, 'Ir')
 Bfvp = ((np.sqrt(2) * m * mi0 * N * kfs * ksvr) / (
         pi * (delta / 1000) * kCv * np.abs(vrp) * km)) * Ir
+print_var_value(Bfvp, 'Bfvp')
 
 vrs = np.zeros(vs.size * gr.size)
 frs = np.zeros(vs.size * gr.size)
@@ -269,55 +262,85 @@ for i, item in enumerate(vs):
         vrs[i * gr.size + j] = item + gr_item * Qr
         frs[i * gr.size + j] = fs * np.abs(1 + (gr_item * Qr / p) * (1 - s_p))
 
-print(vrs)
-print(frs)
+print_var_value(vrs, 'vrs')
+print_var_value(frs, 'frs')
 
 ksvr = (np.sin(vrs * bsr / dr)) / (vrs * bsr / dr)
+print_var_value(ksvr, 'ksvr')
+
 kCv = np.ones(vrs.size)
 for i, item in enumerate(vrs):
     if abs(item) < (Qr - p):
         kCv[i] = kCr
-print(kCv)
+print_var_value(kCv, 'kCv')
 
 alfaQv = 2 * pi * vs / Qr
+print_var_value(alfaQv, 'alfaQv')
 ktr = (tr - bsr) / tr
+print_var_value(ktr, 'ktr')
 
 Uicv = (np.sqrt(2) * pi ** 2 * frv * (lFe / 1000) *
         ((dr / 1000) / Qr) * Bv * np.sin(vs * pi * ktr / Qr))
+print_var_value(Uicv, 'Uicv')
 
 gammar_teta = gammar_0 * (kgamma + 25) / (kgamma + tetar)
-Rc = (pi * dc / 1000) / (Qr * gammar_teta * sc)
-przekladnia = (2 * N * kfs / kfr) ** 2 * (3 / Qr)
-Rc = Rc * przekladnia
-kRv = 0.01 * h * np.sqrt(frv)
-Rpr = ((lpr / float(1e3)) / (gammar_teta * spr))
-Rpr = Rpr * przekladnia
-Rprv = Rpr * kRv
-Rcv = 2 * Rc + Rprv * (2 * np.sin(alfaQv / 2)) ** 2
-Ldeltac = (mi0 * (lFe / 1000) * ((tr - bsr) / 1000)) / ((delta / 1000) * kCs)
+print_var_value(gammar_teta, 'gammar_teta')
 
+Rc = (pi * dc / 1000) / (Qr * gammar_teta * sc)
+print_var_value(Rc, 'Rc')
+
+przekladnia = (2 * N * kfs / kfr) ** 2 * (3 / Qr)
+print_var_value(przekladnia, 'przekladnia')
+
+Rc = Rc * przekladnia
+print_var_value(Rc, 'Rc')
+
+kRv = 0.01 * h * np.sqrt(frv)
+print_var_value(kRv, 'kRv')
+Rpr = ((lpr / float(1e3)) / (gammar_teta * spr))
+print_var_value(Rpr, 'Rpr')
+Rpr = Rpr * przekladnia
+print_var_value(Rpr, 'Rpr')
+Rprv = Rpr * kRv
+print_var_value(Rprv, 'Rprv')
+Rcv = 2 * Rc + Rprv * (2 * np.sin(alfaQv / 2)) ** 2
+print_var_value(Rcv, 'Rcv')
+Ldeltac = (mi0 * (lFe / 1000) * ((tr - bsr) / 1000)) / ((delta / 1000) * kCs)
+print_var_value(Ldeltac, 'Ldeltac')
 kX = np.ones(frv.size)
+
 for i, value in enumerate(frv):
     if h >= (150 / np.sqrt(value)):
         kX[i] = 150 / (h * np.sqrt(value))
 
+print_var_value(kX, 'kX')
+
 frpodst = np.min(frv)
+print_var_value(frpodst, 'frpodst')
 Lqra01 = Xqra01 / (2 * pi * frpodst)
+print_var_value(Lqra01, 'Lqra01')
 Lqra01 = Lqra01 * przekladnia
+print_var_value(Lqra01, 'Lqra01')
 Lpr = Xpr / (2 * pi * frpodst)
+print_var_value(Lpr, 'Lpr')
 Lpr = Lpr * przekladnia
+print_var_value(Lpr, 'Lpr')
 LQrv = Lqra01 + Lpr * kX
+print_var_value(LQrv, 'LQrv')
 LQcv = LQrv * (2 * np.sin(alfaQv / 2)) ** 2
+print_var_value(LQcv, 'LQcv')
 Icv = Uicv / (np.sqrt(Rcv ** 2 + (2 * pi * frv * (LQcv + Ldeltac) ** 2)))
+print_var_value(Icv, 'Icv')
 Iprv = Icv * 2 * np.sin(alfaQv / 2)
+print_var_value(Iprv, 'Iprv')
 
 gr_len = gr.size
 Bfvrs = np.zeros(vs.size * gr_len)
 for i, vs_item in enumerate(vs):
     for j, gr_item in enumerate(gr):
         indx = i * gr_len + j
-        Bfvrs[indx] = ((mi0 * Qr * ksvr[indx]) / np.sqrt(2) * pi *
-                       (delta / 1000) * kCv[indx] * np.abs(vrs[indx]) * km) * Iprv[i]
+        Bfvrs[indx] = ((mi0 * Qr * ksvr[indx]) / (np.sqrt(2) * pi *
+                                                  (delta / 1000) * kCv[indx] * np.abs(vrs[indx]) * km)) * Iprv[i]
 
 print_var_value(vrs, 'vrs')
 print_var_value(Bfvrs, 'Bfvrs')
@@ -348,63 +371,205 @@ print_var_value(Blkrp, 'Blrkp')
 # import time
 # Timing.start_program()
 
-import time
+# import time
 
 vlrv = np.array([])
 
-start_time = time.time()
+# start_time = time.time()
 for i, item in enumerate(vls):
     vlrv = np.hstack((vlrv, item + klr * Qr))
 print_var_value(vlrv, 'vlrv')
-print("Elapsed time: ", time.time() - start_time)
 
-start_time = time.time()
-vlrv = np.zeros(vls.size * klr.size)
-klr_len = klr.size
-for i, item_vls in enumerate(vls):
-    for j, item_klr in enumerate(klr):
-        vlrv[klr_len*i + j] = item_vls + item_klr * Qr
-print_var_value(vlrv, 'vlrv')
-print("Elapsed time: ", time.time() - start_time)
+# print("Elapsed time: ", time.time() - start_time)
 
-epsilon = 3*q*(1-y)
-
-
-
-
+# start_time = time.time()
+# vlrv = np.zeros(vls.size * klr.size)
+# klr_len = klr.size
+# for i, item_vls in enumerate(vls):
+#     for j, item_klr in enumerate(klr):
+#         vlrv[klr_len * i + j] = item_vls + item_klr * Qr
 # print_var_value(vlrv, 'vlrv')
-# print(time.time_ns() - start_time)
-start_time = time.time()
+# print("Elapsed time: ", time.time() - start_time)
+
+epsilon = 3 * q * (1 - y)
+print_var_value(epsilon, 'epsilon')
+
+Blrs = np.array([])
+for i, item in enumerate(vls):
+    B = Bvs[np.where(vs == vls[i])[0][0]]
+    Blrs = np.hstack((Blrs, (-1) ** (epsilon * kfs) * betar / 2 * kCr * Fkr * B))
+print_var_value(Blrs, 'Blrs')
+
+# print(vrs)
+# print(Bfvrs)
+
+# USUWANIE DUPLIKATÓW
+
+print("*" * 50)
+print("USUWANIE DUPLIKATÓW Z vrs".center(50))
+print("*" * 50)
+
+print("vrs.size = {0}".format(vrs.size))
+print("Bfvrs.size = {0}".format(Bfvrs.size))
+
+print("*" * 50)
+print("PRZED USUNIECIEM")
+print_var_value(vrs, 'vrs')
+print_var_value(Bfvrs, 'Bfvrs')
+
 i = 0
+while i < vrs.size:
+    indices = np.where(vrs == vrs[i])[0]
+    idx_to_del = indices[1:]
+    Bfvrs[i] = np.sum(Bfvrs[indices])
+    vrs = np.delete(vrs, idx_to_del)
+    Bfvrs = np.delete(Bfvrs, idx_to_del)
+    i += 1
 
-# while True:
-#     if i > 10000000:
-#         break
-#     i += 1
-# print(time.time() - start_time)
+print("*" * 50)
+print("PO USUNIECIU")
+print_var_value(vrs, 'vrs')
+print_var_value(Bfvrs, 'Bfvrs')
 
+print("vrs.size = {0}".format(vrs.size))
+print("Bfvrs.size = {0}".format(Bfvrs.size))
 
-# np.savetxt("rzad_vs_Debug.csv", rzad_vs, fmt='%.3e', delimiter = ",")
-# np.savetxt("sum_Bs_Debug.csv", sum_Bs, fmt='%.3e', delimiter = ",")
-# np.savetxt("new_vs_Debug.csv", new_vs, fmt='%.3e', delimiter = ",")
-# np.savetxt("temp_Bs_Debug.csv", temp_Bs, fmt='%.3e', delimiter = ",")
+suma_Bvr = Bfvrs
+rzad_vr = vrs
+suma_fr = frs
 
-# with open('debug.txt', 'w') as f:
-#     print(rzad_vs, file=f)
-#     print(sum_Bs, file=f)
-#     print('*' * 50)
-#     print(new_vs, file=f)
-#     print(temp_Bs, file=f)
+# Sumowanie Bfvrs z Blrkp
+rzad_vr = np.hstack((rzad_vr, vrlp))
+suma_Bvr = np.hstack((suma_Bvr, Blkrp))
 
-# while True:
-#     print(rzad_vs)
+print("*" * 50)
+print("SUMOWANIE Bfvrs z Blrkp")
+print("*" * 50)
 
-# for i, item in enumerate(rzad_vs):
-#     # print(i, item)
-#     ind = np.where(rzad_vs[i+1:] == item)[0]
-#     if ind.size != 0:
-#         dupl_ind = ind + (i+1)
-#         print(dupl_ind, rzad_vs[dupl_ind])
-#
-# if x.size != 0:
-#     print(x[0])
+print("PRZED USUNIECIEM:")
+print_var_value(rzad_vr.size, 'rzad_vr.size')
+print_var_value(suma_Bvr.size, 'suma_Bvr.size')
+
+i = 0
+while i < rzad_vr.size:
+    indices = np.where(rzad_vr[i] == rzad_vr)[0]
+    idx_to_del = indices[1:]
+
+    if idx_to_del.size > 0:
+        print("DUPLIKAT: ", rzad_vr[idx_to_del])
+        for j in idx_to_del:
+            suma_Bvr[i] = suma_Bvr[i] + suma_Bvr[j]
+        print(suma_Bvr[i])
+
+    rzad_vr = np.delete(rzad_vr, idx_to_del)
+    suma_Bvr = np.delete(suma_Bvr, idx_to_del)
+    i += 1
+
+print("PO USUNIECIU:")
+for v, B in zip(rzad_vr, suma_Bvr):
+    print(v, B)
+
+print_var_value(rzad_vr, 'rzad_vr')
+print_var_value(suma_Bvr, 'suma_Bvr')
+
+print_var_value(rzad_vr.size, 'rzad_vr.size')
+print_var_value(suma_Bvr.size, 'suma_Bvr.size')
+
+# Sumowanie z Blrs
+
+rzad_vr = np.hstack((rzad_vr, vlrv))
+suma_Bvr = np.hstack((suma_Bvr, Blrs))
+
+print("*" * 50)
+print("SUMOWANIE Z Blrs")
+print("Rzad vr przed usunieciem duplikatow:", rzad_vr.size)
+print("Suma Bvr przed usunieciem duplikatow:", suma_Bvr.size)
+
+i = 0
+while i < rzad_vr.size:
+    indices = np.where(rzad_vr[i] == rzad_vr)[0]
+    idx_to_del = indices[1:]
+
+    for j in idx_to_del:
+        try:
+            suma_Bvr[i] = suma_Bvr[i] + suma_Bvr[j]
+        except IndexError:
+            print("Idx to del : ", idx_to_del)
+            print("DEBUGGING")
+            print(f"i = {i}")
+            print(f"j = {j}")
+            print("rzad_vr.size = ", rzad_vr.size)
+            print("suma_Bvr.size = ", suma_Bvr.size)
+    rzad_vr = np.delete(rzad_vr, idx_to_del)
+    suma_Bvr = np.delete(suma_Bvr, idx_to_del)
+    i += 1
+
+print("Rzad vr po usunieciu duplikatow:", rzad_vr.size)
+print("Suma Bvr po usunieciu duplikatow:", suma_Bvr.size)
+
+print("PO DODANIU Blrs")
+
+print_var_value(rzad_vr, 'rzad_vr')
+print_var_value(suma_Bvr, 'suma_Bvr')
+
+print("*" * 50)
+print("SUMOWANIE Z Bfvp")
+rzad_vr = np.hstack((rzad_vr, vrp))
+suma_Bvr = np.hstack((suma_Bvr, Bfvp))
+
+print("Rzad vr przed usunieciem duplikatow:", rzad_vr.size)
+print("Suma Bvr przed usunieciem duplikatow:", suma_Bvr.size)
+
+i = 0
+while i < rzad_vr.size:
+    indices = np.where(rzad_vr[i] == rzad_vr)[0]
+    idx_to_del = indices[1:]
+
+    for j in idx_to_del:
+        if idx_to_del.size == 1:
+            suma_Bvr[i] = np.sqrt(suma_Bvr[i] ** 2 + suma_Bvr[j] ** 2)
+        else:
+            raise ValueError("WIĘCEJ INDUKCJI NIŻ SPODZIEWANO SIĘ")
+    rzad_vr = np.delete(rzad_vr, idx_to_del)
+    suma_Bvr = np.delete(suma_Bvr, idx_to_del)
+    i += 1
+
+print("Rzad vr po usunieciu duplikatow:", rzad_vr.size)
+print("Suma Bvr po usunieciu duplikatow:", suma_Bvr.size)
+
+# STRATY W STOJANIE
+
+vr = rzad_vr
+Bvr = abs(suma_Bvr)
+
+fsv = fs * np.abs(1 + (vr / p) * (1 - s_p))
+
+Pssv = (((roFe * ds ** 2 * lFe * pCl * kCs * float(1e3)) / (2 * kFe * np.abs(vr))) * (fsv / 50) ** 2
+        * (Bvr / 1.5) ** 2 * float(1e-9))
+Pss = np.sum(Pssv)
+print_var_value(Pss, 'Pss')
+
+kts = (ts - bss) / ts
+etarv = np.sin(kts * vr * pi / Qs) / (kts * vr * pi / Qs)
+Btv = ((ts * kts * etarv) / (bts * kFe)) * Bvr
+p0 = 330
+pk = 540
+Bk = 1.35
+sigmak = 4
+kappa = 1.55
+
+xp = (Btv / Bk) ** sigmak
+ppv = (p0 + (pk - p0) * (1 - np.exp(-xp))) * (fsv / 1000) ** kappa
+Ppv = mts * Btv ** 2 * ppv
+Pp = sum(Ppv)
+
+print("STRATY KOŃCOWE: ")
+print(f"Straty dodatkowe w zebach wirnika Ps = {Ps:10}")
+print(f"Straty dodatkowe w klatce wirnika PAl = {PAl:10}")
+print(f"Straty powierzchniowe w zebach stojana Pss = {Pss:10}")
+print(f"Straty pulsacyjne w zebach stojana Pp = {Pp:10}")
+
+test_wydruk = np.vstack((rzad_vr, suma_Bvr))
+test_wydruk = test_wydruk.transpose()
+print(test_wydruk)
+Utils.print_to_file((rzad_vr, suma_Bvr), filename='test_args.csv')
