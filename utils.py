@@ -87,5 +87,10 @@ class Utils:
 
             return order, flux_dens
 
+    # @classmethod
+    # def save_arrays(cls, *args, **kwds, save_to_file):
+    #     if save_to_file:
+    #         np.savez(*args, **)
+
     __doc__: str = "" \
                    "This class is intended to serve as an utility class container for general script"

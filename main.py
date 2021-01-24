@@ -12,6 +12,13 @@ def print_var_value(var, name: str):
 
 # TODO: SPLIT INTO SEVERAL SMALLER FUNCTIONS
 
+save_to_file = False
+
+
+class MotorCalc:
+    def __init__(self):
+
+
 p = 2  # Liczba par biegunów [-]
 Qs = 36  # Liczba żłobków stojana [-]
 Qr = 28  # Liczba żłobków wirnika [-]
@@ -62,8 +69,9 @@ Xpr = 0.00017001  # Reaktancja podlegajaca wypieraniu pradu, sprowadzona
 pi = math.pi
 limit = 5
 
-
 if __name__ == "__main__":
+
+    load_input_vals()
     kls = np.arange(-limit, limit + 1)
     klr = np.arange(-limit, limit + 1)
     gs = np.arange(-limit, limit + 1)
@@ -91,14 +99,14 @@ if __name__ == "__main__":
     deltas = delta / cc * bss / ts
     print_var_value(deltas, 'deltas')
     gammas = (4 / pi) * ((bss / (2 * deltas)) * math.atan((bss / (2 * deltas)))
-                         - 0.5 * math.log(1 + ((bss / (2 * deltas))) ** 2))
+                         - 0.5 * math.log(1 + (bss / (2 * deltas)) ** 2))
     print_var_value(gammas, 'gammas')
     kCs = ts / (ts - gammas * deltas)
     print_var_value(kCs, 'kCs')
     deltar = delta / cc * bsr / tr
     print_var_value(deltar, 'deltar')
     gammar = (4 / pi) * ((bsr / (2 * deltar)) * math.atan((bsr / (2 * deltar)))
-                         - 0.5 * math.log(1 + ((bsr / (2 * deltar))) ** 2))
+                         - 0.5 * math.log(1 + (bsr / (2 * deltar)) ** 2))
     print_var_value(gammar, 'gammar')
     kCr = tr / (tr - gammar * deltar)
     print_var_value(kCr, 'kCr')
@@ -181,24 +189,14 @@ if __name__ == "__main__":
     print(sum_Bs)
 
     # DUPLIKATY SUM_BS
-    np.savez("fixtures/duplikaty_sum_Bs, #" + str(limit), x = rzad_vs, y = sum_Bs)
+    # np.savez("fixtures/duplikaty_sum_Bs, #" + str(limit), x=rzad_vs, y=sum_Bs)
 
-    while i < rzad_vs.size:
-        indices = np.where(rzad_vs[i] == rzad_vs)[0]
-        idx_to_del = indices[1:]
-        if indices.size == 2:
-            Bs1, Bs2 = sum_Bs[i], sum_Bs[idx_to_del[0]]
-            sum_Bs[i] = np.sqrt(Bs1 ** 2 + Bs2 ** 2 + 2 * Bs1 * Bs2 * sinfi)
-        else:
-            for j in idx_to_del:
-                sum_Bs[i] = sum_Bs[i] + sum_Bs[j]
-        rzad_vs = np.delete(rzad_vs, idx_to_del)
-        sum_Bs = np.delete(sum_Bs, idx_to_del)
-        i += 1
+    rzad_vs, sum_Bs = Utils.remove_flux_dens_duplicates_sin_fi(rzad_vs, sum_Bs, sinfi)
 
     print(rzad_vs, 'rzad_vs')
     print(sum_Bs, 'sum_Bs')
-    np.savez("fixtures/duplikaty_sum_Bs_results, #" + str(limit), x = rzad_vs, y = sum_Bs)
+
+    # np.savez("fixtures/duplikaty_sum_Bs_results, #" + str(limit), x=rzad_vs, y=sum_Bs)
 
     vs = rzad_vs
     Bv = sum_Bs
@@ -229,7 +227,6 @@ if __name__ == "__main__":
     #
     #
     #
-
 
     print("*" * 50)
     print("*" * 20, "WIRNIK".center(10), "*" * 20)
@@ -376,29 +373,11 @@ if __name__ == "__main__":
     print_var_value(vrlp, 'vrlp')
     print_var_value(Blkrp, 'Blrkp')
 
-    # from timing import Timing
-    # import time
-    # Timing.start_program()
-
-    # import time
-
     vlrv = np.array([])
 
-    # start_time = time.time()
     for i, item in enumerate(vls):
         vlrv = np.hstack((vlrv, item + klr * Qr))
     print_var_value(vlrv, 'vlrv')
-
-    # print("Elapsed time: ", time.time() - start_time)
-
-    # start_time = time.time()
-    # vlrv = np.zeros(vls.size * klr.size)
-    # klr_len = klr.size
-    # for i, item_vls in enumerate(vls):
-    #     for j, item_klr in enumerate(klr):
-    #         vlrv[klr_len * i + j] = item_vls + item_klr * Qr
-    # print_var_value(vlrv, 'vlrv')
-    # print("Elapsed time: ", time.time() - start_time)
 
     epsilon = 3 * q * (1 - y)
     print_var_value(epsilon, 'epsilon')
@@ -408,9 +387,6 @@ if __name__ == "__main__":
         B = Bvs[np.where(vs == vls[i])[0][0]]
         Blrs = np.hstack((Blrs, (-1) ** (epsilon * kfs) * betar / 2 * kCr * Fkr * B))
     print_var_value(Blrs, 'Blrs')
-
-    # print(vrs)
-    # print(Bfvrs)
 
     # USUWANIE DUPLIKATÓW
 
@@ -426,23 +402,17 @@ if __name__ == "__main__":
     print_var_value(vrs, 'vrs')
     print_var_value(Bfvrs, 'Bfvrs')
 
-    np.savez("fixtures/duplikaty_z_vrs, #" + str(limit), x = vrs, y = Bfvrs)
+    # np.savez("fixtures/duplikaty_z_vrs, #" + str(limit), x=vrs, y=Bfvrs)
 
     i = 0
-    while i < vrs.size:
-        indices = np.where(vrs == vrs[i])[0]
-        idx_to_del = indices[1:]
-        Bfvrs[i] = np.sum(Bfvrs[indices])
-        vrs = np.delete(vrs, idx_to_del)
-        Bfvrs = np.delete(Bfvrs, idx_to_del)
-        i += 1
+
+    vrs, Bfvrs = Utils.remove_flux_dens_duplicates(vrs, Bfvrs)
 
     print("*" * 50)
     print("PO USUNIECIU")
     print_var_value(vrs, 'vrs')
     print_var_value(Bfvrs, 'Bfvrs')
-    np.savez("fixtures/duplikaty_z_vrs_results, #" + str(limit), x = vrs, y = Bfvrs)
-
+    # np.savez("fixtures/duplikaty_z_vrs_results, #" + str(limit), x=vrs, y=Bfvrs)
 
     print("vrs.size = {0}".format(vrs.size))
     print("Bfvrs.size = {0}".format(Bfvrs.size))
@@ -459,32 +429,16 @@ if __name__ == "__main__":
     print("SUMOWANIE Bfvrs z Blrkp")
     print("*" * 50)
 
-    np.savez("fixtures/sumowanie_Bfvrs_z_Blkrp, #" + str(limit), x = rzad_vr, y = suma_Bvr)
+    # np.savez("fixtures/sumowanie_Bfvrs_z_Blkrp, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
     print("PRZED USUNIECIEM:")
     print_var_value(rzad_vr.size, 'rzad_vr.size')
     print_var_value(suma_Bvr.size, 'suma_Bvr.size')
 
-    i = 0
-    while i < rzad_vr.size:
-        indices = np.where(rzad_vr[i] == rzad_vr)[0]
-        idx_to_del = indices[1:]
-
-        if idx_to_del.size > 0:
-            print("DUPLIKAT: ", rzad_vr[idx_to_del])
-            for j in idx_to_del:
-                suma_Bvr[i] = suma_Bvr[i] + suma_Bvr[j]
-            print(suma_Bvr[i])
-
-        rzad_vr = np.delete(rzad_vr, idx_to_del)
-        suma_Bvr = np.delete(suma_Bvr, idx_to_del)
-        i += 1
+    rzad_vr, suma_Bvr = Utils.remove_flux_dens_duplicates(rzad_vr, suma_Bvr)
 
     print("PO USUNIECIU:")
-    np.savez("fixtures/sumowanie_Bfvrs_z_Blkrp_results, #" + str(limit), x = rzad_vr, y = suma_Bvr)
-
-    for v, B in zip(rzad_vr, suma_Bvr):
-        print(v, B)
+    # np.savez("fixtures/sumowanie_Bfvrs_z_Blkrp_results, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
     print_var_value(rzad_vr, 'rzad_vr')
     print_var_value(suma_Bvr, 'suma_Bvr')
@@ -497,36 +451,19 @@ if __name__ == "__main__":
     rzad_vr = np.hstack((rzad_vr, vlrv))
     suma_Bvr = np.hstack((suma_Bvr, Blrs))
 
-    np.savez("fixtures/sumowanie_z_Blrs, #" + str(limit), x = rzad_vr, y = suma_Bvr)
+    # np.savez("fixtures/sumowanie_z_Blrs, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
     print("*" * 50)
     print("SUMOWANIE Z Blrs")
     print("Rzad vr przed usunieciem duplikatow:", rzad_vr.size)
     print("Suma Bvr przed usunieciem duplikatow:", suma_Bvr.size)
 
-    i = 0
-    while i < rzad_vr.size:
-        indices = np.where(rzad_vr[i] == rzad_vr)[0]
-        idx_to_del = indices[1:]
-
-        for j in idx_to_del:
-            try:
-                suma_Bvr[i] = suma_Bvr[i] + suma_Bvr[j]
-            except IndexError:
-                print("Idx to del : ", idx_to_del)
-                print("DEBUGGING")
-                print(f"i = {i}")
-                print(f"j = {j}")
-                print("rzad_vr.size = ", rzad_vr.size)
-                print("suma_Bvr.size = ", suma_Bvr.size)
-        rzad_vr = np.delete(rzad_vr, idx_to_del)
-        suma_Bvr = np.delete(suma_Bvr, idx_to_del)
-        i += 1
+    rzad_vr, suma_Bvr = Utils.remove_flux_dens_duplicates(rzad_vr, suma_Bvr)
 
     print("Rzad vr po usunieciu duplikatow:", rzad_vr.size)
     print("Suma Bvr po usunieciu duplikatow:", suma_Bvr.size)
 
-    np.savez("fixtures/sumowanie_z_Blrs_results, #" + str(limit), x = rzad_vr, y = suma_Bvr)
+    # np.savez("fixtures/sumowanie_z_Blrs_results, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
     print("PO DODANIU Blrs")
 
@@ -538,29 +475,17 @@ if __name__ == "__main__":
     rzad_vr = np.hstack((rzad_vr, vrp))
     suma_Bvr = np.hstack((suma_Bvr, Bfvp))
 
-    np.savez("fixtures/sumowanie_z_Bfvp, #" + str(limit), x = rzad_vr, y = suma_Bvr)
+    # np.savez("fixtures/sumowanie_z_Bfvp, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
     print("Rzad vr przed usunieciem duplikatow:", rzad_vr.size)
     print("Suma Bvr przed usunieciem duplikatow:", suma_Bvr.size)
 
-    i = 0
-    while i < rzad_vr.size:
-        indices = np.where(rzad_vr[i] == rzad_vr)[0]
-        idx_to_del = indices[1:]
-
-        for j in idx_to_del:
-            if idx_to_del.size == 1:
-                suma_Bvr[i] = np.sqrt(suma_Bvr[i] ** 2 + suma_Bvr[j] ** 2)
-            else:
-                raise ValueError("WIĘCEJ INDUKCJI NIŻ SPODZIEWANO SIĘ")
-        rzad_vr = np.delete(rzad_vr, idx_to_del)
-        suma_Bvr = np.delete(suma_Bvr, idx_to_del)
-        i += 1
+    rzad_vr, suma_Bvr = Utils.remove_flux_dens_duplicates_sqrt(rzad_vr, suma_Bvr)
 
     print("Rzad vr po usunieciu duplikatow:", rzad_vr.size)
     print("Suma Bvr po usunieciu duplikatow:", suma_Bvr.size)
 
-    np.savez("fixtures/sumowanie_z_Bfvp_results, #" + str(limit), x = rzad_vr, y = suma_Bvr)
+    # np.savez("fixtures/sumowanie_z_Bfvp_results, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
     # STRATY W STOJANIE
 
@@ -595,7 +520,3 @@ if __name__ == "__main__":
     print(f"Straty pulsacyjne w zebach stojana Pp = {Pp:10}")
 
 
-    # test_wydruk = np.vstack((rzad_vr, suma_Bvr))
-    # test_wydruk = test_wydruk.transpose()
-    # print(test_wydruk)
-    # Utils.print_to_file((rzad_vr, suma_Bvr), filename='test_args.csv')
