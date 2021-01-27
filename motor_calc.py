@@ -7,6 +7,10 @@ import math
 def print_var_value(var, name: str):
     print(f"{name} = {var}")
 
+# TODO:
+# Replace exising B and vs with FluxDensity() class instances
+
+
 
 class MotorCalc:
     """
@@ -548,6 +552,27 @@ class MotorCalc:
             print(f"Straty pulsacyjne w zebach stojana Pp = {self.Pp:10}")
         else:
             print("CALCULATE ROTOR LOSSES FIRST!")
+
+    def __str__(self):
+        txt = ""
+        pl_eng_dict = {True: "Tak", False: "Nie"}
+        txt += f"Limit = {self.limit}\n"
+        txt += f"Obliczono parametry konstrukcyjne".ljust(45) + f" = {pl_eng_dict[self.calculated_construct_params]}\n"
+        txt += f"Obliczono indukcjne stojana".ljust(45) + f" = {pl_eng_dict[self.calculated_stator_fluxes]}\n"
+        txt += f"Obliczono straty stojana".ljust(45) + f" = {pl_eng_dict[self.calculated_stator_losses]}\n"
+        txt += f"Obliczono parametry wirnika".ljust(45) + f" = {pl_eng_dict[self.calculated_rotor_params]}\n"
+        txt += f"Obliczono indukcje wirnika".ljust(45) + f" = {pl_eng_dict[self.calculated_rotor_flux_dens]}\n"
+        txt += f"Obliczono straty wirnika".ljust(45) + f" = {pl_eng_dict[self.calculated_rotor_losses]}\n"
+
+        if (self.calculated_construct_params and self.calculated_stator_fluxes and self.calculated_stator_losses and
+                self.calculated_rotor_params and self.calculated_rotor_flux_dens and self.calculated_rotor_losses):
+            txt += f"Straty dodatkowe w zebach wirnika Ps".ljust(45) + f" = {self.Ps:10}\n"
+            txt += f"Straty dodatkowe w klatce wirnika PAl".ljust(45) + f" = {self.PAl:10}\n"
+            txt += f"Straty powierzchniowe w zebach stojana Pss".ljust(45) + f" = {self.Pss:10}\n"
+            txt += f"Straty pulsacyjne w zebach stojana Pp".ljust(45) + f" = {self.Pp:10}\n"
+        else:
+            txt += "OBLICZENIA NIE ZOSTAŁY WYKONANE CAŁOWICIE"
+        return txt
 
 
 if __name__ == "__main__":
