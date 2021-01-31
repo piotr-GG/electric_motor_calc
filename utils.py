@@ -1,4 +1,9 @@
+import traceback
+
 import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QErrorMessage
+import sys
 
 class Utils:
     # TODO: ADD ERROR CHECKING
@@ -29,7 +34,7 @@ class Utils:
         return order, flux_dens
 
     @classmethod
-    def remove_flux_dens_duplicates_sin_fi(cls, order, flux_dens, sinfi = 1.0):
+    def remove_flux_dens_duplicates_sin_fi(cls, order, flux_dens, sinfi=1.0):
         i = 0
         while i < order.size:
             indices = np.where(order[i] == order)[0]
@@ -67,8 +72,6 @@ class Utils:
 
         return order, flux_dens
 
-
-
     @classmethod
     def remove_flux_dens_duplicates_old(cls, order, flux_dens):
         i = 0
@@ -87,10 +90,25 @@ class Utils:
 
             return order, flux_dens
 
-    # @classmethod
-    # def save_arrays(cls, *args, **kwds, save_to_file):
-    #     if save_to_file:
-    #         np.savez(*args, **)
+    @staticmethod
+    def excepthook(exc_type, exc_value, exc_tb):
+        tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        print("Error cached!:")
+        print("Error message:\n", tb)
+        QtWidgets.QApplication.quit()
+
+    @staticmethod
+    def excepthook_errormsg(exc_type, exc_value, exc_tb):
+        error_box = QErrorMessage()
+        error_box.setWindowTitle("Błąd")
+        tb = "\n".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        error_box.setMaximumSize(600, 200)
+        error_box.setMinimumSize(600, 200)
+        print(tb, file=sys.stderr, flush=True)
+        x = error_box.showMessage(tb)
+        x = error_box.exec_()
+        QtWidgets.QApplication.quit()
+
 
     __doc__: str = "" \
                    "This class is intended to serve as an utility class container for general script"

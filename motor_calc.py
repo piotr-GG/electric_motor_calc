@@ -1,5 +1,6 @@
 from motor import Motor
 from utils import Utils
+from flux_density import FluxDensity
 import numpy as np
 import math
 
@@ -7,9 +8,9 @@ import math
 def print_var_value(var, name: str):
     print(f"{name} = {var}")
 
+
 # TODO:
 # Replace exising B and vs with FluxDensity() class instances
-
 
 
 class MotorCalc:
@@ -17,7 +18,7 @@ class MotorCalc:
     Class used to perform calculation on a motor instance.
     """
 
-    def __init__(self, motor: Motor, limit: int) -> None:
+    def __init__(self, motor: Motor, *, limit: int = 0, kls: int = 5, klr: int = 5, gs: int = 5, gr: int = 5) -> None:
         if not isinstance(motor, Motor):
             raise ValueError("Wrong value in motor arg")
 
@@ -30,10 +31,14 @@ class MotorCalc:
         self.calculated_rotor_flux_dens = False
         self.calculated_rotor_losses = False
 
-        self.kls = None
-        self.klr = None
-        self.gs = None
-        self.gr = None
+        self.kls = kls
+        self.klr = klr
+        self.gs = gs
+        self.gr = gr
+
+        self.init_atts()
+
+    def init_atts(self):
         self.q = None
         self.ts = None
         self.tr = None
@@ -61,7 +66,6 @@ class MotorCalc:
         self.kq1 = None
         self.kfs = None
         self.Bfv = None
-        self.kls = None
         self.vls = None
         self.x = None
         self.a = None
@@ -87,7 +91,6 @@ class MotorCalc:
         self.PAlv = None
         self.PAl = None
 
-        self.gr = None
         self.vrp = None
         self.kCv = None
 
@@ -177,10 +180,17 @@ class MotorCalc:
         self.calc_rotor_losses()
 
     def calc_construct_params(self):
-        self.kls = np.arange(-self.limit, self.limit + 1)
-        self.klr = np.arange(-self.limit, self.limit + 1)
-        self.gs = np.arange(-self.limit, self.limit + 1)
-        self.gr = np.arange(-self.limit, self.limit + 1)
+        if self.limit != 0:
+            self.kls = np.arange(-self.limit, self.limit + 1)
+            self.klr = np.arange(-self.limit, self.limit + 1)
+            self.gs = np.arange(-self.limit, self.limit + 1)
+            self.gr = np.arange(-self.limit, self.limit + 1)
+        else:
+            self.kls = np.arange(-self.kls, self.kls + 1)
+            self.klr = np.arange(-self.klr, self.klr + 1)
+            self.gs = np.arange(-self.gs, self.gs + 1)
+            self.gr = np.arange(-self.gr, self.gr + 1)
+
         self.q = self.m.Qs / (2 * self.m.m * self.m.p)
         self.ts = math.pi * self.m.ds / self.m.Qs
         self.tr = math.pi * self.m.dr / self.m.Qr
@@ -268,13 +278,11 @@ class MotorCalc:
         self.rzad_vs = np.hstack((self.vs, self.vls))
         self.sum_Bs = np.hstack((self.Bfv, np.abs(self.Blk)))
         # DUPLIKATY SUM_BS
-        # np.savez("fixtures/duplikaty_sum_Bs, #" + str(limit), x=rzad_vs, y=sum_Bs)
         self.rzad_vs, self.sum_Bs = Utils.remove_flux_dens_duplicates_sin_fi(self.rzad_vs, self.sum_Bs, self.m.sinfi)
         self.vs = self.rzad_vs
         self.Bv = self.sum_Bs
 
         self.calculated_stator_fluxes = True
-        # np.savez("fixtures/duplikaty_sum_Bs_results, #" + str(limit), x=rzad_vs, y=sum_Bs)
 
     def print_stator_flux_dens(self):
         if self.calculated_stator_fluxes:
@@ -325,6 +333,9 @@ class MotorCalc:
                      self.m.Qr * self.kCr * float(1e-9))
         self.PAl = np.sum(self.PAlv)
         self.calculated_stator_losses = True
+
+        self.PAl = np.around(self.PAl, 2)
+        self.Ps = np.around(self.Ps, 2)
 
     def print_stator_losses(self):
         if self.calculated_stator_losses:
@@ -544,6 +555,9 @@ class MotorCalc:
         self.Pp = sum(self.Ppv)
         self.calculated_rotor_losses = True
 
+        self.Pss = np.around(self.Pss, 2)
+        self.Pp = np.around(self.Pp, 2)
+
     def print_rotor_losses(self):
         if self.calculated_rotor_losses:
             print(f"Straty dodatkowe w zebach wirnika Ps = {self.Ps:10}")
@@ -552,6 +566,22 @@ class MotorCalc:
             print(f"Straty pulsacyjne w zebach stojana Pp = {self.Pp:10}")
         else:
             print("CALCULATE ROTOR LOSSES FIRST!")
+
+    def stator_fluxes(self):
+        if self.calculated_stator_fluxes:
+            fluxes = FluxDensity(self.vs, self.Bv)
+            fluxes.sort()
+            return fluxes
+        else:
+            return None
+
+    def rotor_fluxes(self):
+        if self.calculated_rotor_flux_dens:
+            fluxes = FluxDensity(self.rzad_vr, self.suma_Bvr)
+            fluxes.sort()
+            return fluxes
+        else:
+            return None
 
     def __str__(self):
         txt = ""
