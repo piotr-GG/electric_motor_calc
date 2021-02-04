@@ -9,12 +9,12 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
 
 from results_tab import CalcResultsWidget
 from motor_calc import MotorCalc
 from motor import Motor
 from motor_results import MotorResults
+from gui.auxiliary.calculation_matplotlib import  CalculateMatplotlib
 from utils import Utils
 
 
@@ -75,43 +75,33 @@ class UiMainWindow(object):
         self.gr_val_qle.setObjectName("gr_val_qle")
         self.horizontalLayout_4.addWidget(self.gr_val_qle)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
-        self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(120, 160, 321, 80))
-        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
-        self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_5.setSpacing(15)
-        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.groupBox = QtWidgets.QGroupBox(self.horizontalLayoutWidget)
-        self.groupBox.setObjectName("groupBox")
-        self.db_save_pbtn = QtWidgets.QPushButton(self.groupBox)
-        self.db_save_pbtn.setGeometry(QtCore.QRect(20, 20, 75, 23))
-        self.db_save_pbtn.setObjectName("db_save_pbtn")
-        self.db_load_pbtn = QtWidgets.QPushButton(self.groupBox)
-        self.db_load_pbtn.setGeometry(QtCore.QRect(20, 50, 75, 23))
-        self.db_load_pbtn.setObjectName("db_load_pbtn")
-        self.horizontalLayout_5.addWidget(self.groupBox)
-        self.groupBox_3 = QtWidgets.QGroupBox(self.horizontalLayoutWidget)
-        self.groupBox_3.setObjectName("groupBox_3")
-        self.txt_save_pbtn = QtWidgets.QPushButton(self.groupBox_3)
-        self.txt_save_pbtn.setGeometry(QtCore.QRect(20, 20, 75, 23))
-        self.txt_save_pbtn.setObjectName("txt_save_pbtn")
-        self.txt_load_pbtn = QtWidgets.QPushButton(self.groupBox_3)
-        self.txt_load_pbtn.setGeometry(QtCore.QRect(20, 50, 75, 23))
-        self.txt_load_pbtn.setObjectName("txt_load_pbtn")
-        self.horizontalLayout_5.addWidget(self.groupBox_3)
-        self.groupBox_2 = QtWidgets.QGroupBox(self.horizontalLayoutWidget)
-        self.groupBox_2.setObjectName("groupBox_2")
-        self.json_load_ptbn = QtWidgets.QPushButton(self.groupBox_2)
-        self.json_load_ptbn.setGeometry(QtCore.QRect(20, 50, 75, 23))
-        self.json_load_ptbn.setObjectName("json_load_ptbn")
-        self.json_save_pbtn = QtWidgets.QPushButton(self.groupBox_2)
-        self.json_save_pbtn.setGeometry(QtCore.QRect(20, 20, 75, 23))
-        self.json_save_pbtn.setObjectName("json_save_pbtn")
-        self.horizontalLayout_5.addWidget(self.groupBox_2)
         self.calculate_pbtn = QtWidgets.QPushButton(self.centralwidget)
-        self.calculate_pbtn.setGeometry(QtCore.QRect(200, 260, 161, 31))
+        self.calculate_pbtn.setGeometry(QtCore.QRect(200, 151, 161, 41))
         self.calculate_pbtn.setObjectName("calculate_pbtn")
+        self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.groupBox.setGeometry(QtCore.QRect(100, 200, 401, 161))
+        self.groupBox.setObjectName("groupBox")
+        self.limit_lower_qle = QtWidgets.QLineEdit(self.groupBox)
+        self.limit_lower_qle.setGeometry(QtCore.QRect(100, 60, 61, 20))
+        self.limit_lower_qle.setObjectName("limit_lower_qle")
+        self.limit_upper_qle = QtWidgets.QLineEdit(self.groupBox)
+        self.limit_upper_qle.setGeometry(QtCore.QRect(220, 60, 61, 21))
+        self.limit_upper_qle.setObjectName("limit_upper_qle")
+        self.label_5 = QtWidgets.QLabel(self.groupBox)
+        self.label_5.setGeometry(QtCore.QRect(160, 20, 61, 21))
+        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_5.setObjectName("label_5")
+        self.label_6 = QtWidgets.QLabel(self.groupBox)
+        self.label_6.setGeometry(QtCore.QRect(40, 60, 61, 21))
+        self.label_6.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_6.setObjectName("label_6")
+        self.label_7 = QtWidgets.QLabel(self.groupBox)
+        self.label_7.setGeometry(QtCore.QRect(160, 60, 61, 21))
+        self.label_7.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_7.setObjectName("label_7")
+        self.matplotlib_btn = QtWidgets.QPushButton(self.groupBox)
+        self.matplotlib_btn.setGeometry(QtCore.QRect(120, 100, 121, 41))
+        self.matplotlib_btn.setObjectName("matplotlib_btn")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 600, 21))
@@ -129,29 +119,24 @@ class UiMainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
         # Setup custom variables and attributes
         self.customSetup()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Obliczanie strat dodatkowych silnika"))
         self.centralwidget.setWhatsThis(
             _translate("MainWindow", "<html><head/><body><p>Co to jest??!!!!</p></body></html>"))
         self.label.setText(_translate("MainWindow", "ks"))
         self.label_2.setText(_translate("MainWindow", "kr"))
         self.label_3.setText(_translate("MainWindow", "gs"))
         self.label_4.setText(_translate("MainWindow", "gr"))
-        self.groupBox.setTitle(_translate("MainWindow", "DB"))
-        self.db_save_pbtn.setText(_translate("MainWindow", "Zapisz"))
-        self.db_load_pbtn.setText(_translate("MainWindow", "Ładuj"))
-        self.groupBox_3.setTitle(_translate("MainWindow", "Plik tekstowy"))
-        self.txt_save_pbtn.setText(_translate("MainWindow", "Zapisz"))
-        self.txt_load_pbtn.setText(_translate("MainWindow", "Ładuj"))
-        self.groupBox_2.setTitle(_translate("MainWindow", "JSON"))
-        self.json_load_ptbn.setText(_translate("MainWindow", "Ładuj"))
-        self.json_save_pbtn.setText(_translate("MainWindow", "Zapisz"))
         self.calculate_pbtn.setText(_translate("MainWindow", "Wykonaj obliczenia"))
+        self.groupBox.setTitle(_translate("MainWindow", "Badanie wpływu zakresu harmonicznych na straty"))
+        self.label_5.setText(_translate("MainWindow", "Limit"))
+        self.label_6.setText(_translate("MainWindow", "min"))
+        self.label_7.setText(_translate("MainWindow", "max"))
+        self.matplotlib_btn.setText(_translate("MainWindow", "Zbadaj wpływ"))
         self.menuZamknij.setTitle(_translate("MainWindow", "Opcje"))
         self.actionOtw_rz.setText(_translate("MainWindow", "Otwórz"))
 
@@ -163,8 +148,17 @@ class UiMainWindow(object):
 
         self.calculate_pbtn.clicked.connect(self.runCalculations)
 
+        self.matplotlib_btn.clicked.connect(self.runMatplotlib)
         self.calc_tab = None
         self.results_tab = None
+
+    def runMatplotlib(self):
+        limit_lower = int(self.limit_lower_qle.text())
+        limit_upper = int(self.limit_upper_qle.text())
+        test_motor = Motor()
+        self.matplotlib_obj = CalculateMatplotlib(limit_lower, limit_upper, test_motor)
+        self.matplotlib_obj.calculate_losses()
+        self.matplotlib_obj.plot_losses()
 
     def runCalculations(self):
         input_vals = self.validateLimitVals()

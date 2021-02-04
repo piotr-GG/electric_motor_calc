@@ -11,6 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import Qt
 from gui.CalcTabModel import CalcTabModel
+from gui.LossesTabModel import LossesTabModel
 from motor_results import MotorResults
 from utils import Utils
 
@@ -93,12 +94,12 @@ class CalcResultsWidget(object):
         self.groupBox = QtWidgets.QGroupBox(Form)
         self.groupBox.setGeometry(QtCore.QRect(380, 20, 161, 141))
         self.groupBox.setObjectName("groupBox")
-        self.radioButton_4 = QtWidgets.QRadioButton(self.groupBox)
-        self.radioButton_4.setGeometry(QtCore.QRect(20, 100, 82, 17))
-        self.radioButton_4.setObjectName("radioButton_4")
-        self.radioButton_3 = QtWidgets.QRadioButton(self.groupBox)
-        self.radioButton_3.setGeometry(QtCore.QRect(20, 80, 82, 17))
-        self.radioButton_3.setObjectName("radioButton_3")
+        self.rotor_losses_rbtn = QtWidgets.QRadioButton(self.groupBox)
+        self.rotor_losses_rbtn.setGeometry(QtCore.QRect(20, 100, 82, 17))
+        self.rotor_losses_rbtn.setObjectName("Straty w wirniku")
+        self.stator_losses_rbtn = QtWidgets.QRadioButton(self.groupBox)
+        self.stator_losses_rbtn.setGeometry(QtCore.QRect(20, 80, 82, 17))
+        self.stator_losses_rbtn.setObjectName("Straty w stojanie")
         self.stator_flux_d_rbtn = QtWidgets.QRadioButton(self.groupBox)
         self.stator_flux_d_rbtn.setGeometry(QtCore.QRect(20, 40, 101, 17))
         self.stator_flux_d_rbtn.setObjectName("stator_flux_d_rbtn")
@@ -117,8 +118,8 @@ class CalcResultsWidget(object):
         self.label_2.setText(_translate("Form", "Pss"))
         self.label_3.setText(_translate("Form", "Pp"))
         self.groupBox.setTitle(_translate("Form", "Tabela"))
-        self.radioButton_4.setText(_translate("Form", "RadioButton"))
-        self.radioButton_3.setText(_translate("Form", "RadioButton"))
+        self.rotor_losses_rbtn.setText(_translate("Form", "Straty w wirniku"))
+        self.stator_losses_rbtn.setText(_translate("Form", "Straty w stojanie"))
         self.stator_flux_d_rbtn.setText(_translate("Form", "Indukcje stojana"))
         self.rotor_flux_d_rbtn.setText(_translate("Form", "Indukcje wirnika"))
 
@@ -129,7 +130,7 @@ class CalcResultsWidget(object):
         self.activeState = ""
 
     def connectCustomSignals(self):
-        self.rbtns = [self.stator_flux_d_rbtn, self.rotor_flux_d_rbtn]
+        self.rbtns = [self.stator_flux_d_rbtn, self.rotor_flux_d_rbtn, self.stator_losses_rbtn, self.rotor_losses_rbtn]
         for obj in self.rbtns:
             obj.clicked.connect(self.rbtns_toggled)
 
@@ -148,6 +149,14 @@ class CalcResultsWidget(object):
             print("Wirnik!")
             self.activeState = "ROTOR"
             self.show_rotor_flux_d()
+        elif self.stator_losses_rbtn.isChecked() and self.activeState != "STATOR_LOSSES":
+            print("Straty w stojanie!")
+            self.activeState = "STATOR_LOSSES"
+            self.show_stator_losses()
+        elif self.rotor_losses_rbtn.isChecked() and self.activeState != "ROTOR_LOSSES":
+            print("Straty w wirniku!")
+            self.activeState = "ROTOR_LOSSES"
+            self.show_rotor_losses()
 
     def show_stator_flux_d(self):
         self.data = self.motor_results.motor_calc.stator_fluxes()
@@ -156,36 +165,49 @@ class CalcResultsWidget(object):
         self.calc_tabview.setModel(self.model)
         # self.calc_tabview.adjustSize()
 
-        self.hheader = self.calc_tabview.horizontalHeader()
+        # self.hheader = self.calc_tabview.horizontalHeader()
+        #
+        # self.hheader.setDefaultSectionSize(60)
+        # self.vheader = self.calc_tabview.verticalHeader()
+        #
+        # self.vheader.setDefaultSectionSize(30)
+        # self.calc_tabview.setFixedHeight(100)
+        # self.vheader.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
+        # self.vheader.setSectionResizeMode(1, QtWidgets.QHeaderView.Fixed)
 
-        self.hheader.setDefaultSectionSize(60)
-        self.vheader = self.calc_tabview.verticalHeader()
-
-        self.vheader.setDefaultSectionSize(30)
-        self.calc_tabview.setFixedHeight(100)
-        self.vheader.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
-        self.vheader.setSectionResizeMode(1, QtWidgets.QHeaderView.Fixed)
-        # self.calc_tabview.setRowHeight(0, 30)
-        # self.calc_tabview.setRowHeight(1, 30)
-
-        self.calc_tabview.update()
+        # self.calc_tabview.update()
+        self.setCellSizes()
 
     def show_rotor_flux_d(self):
         self.data = self.motor_results.motor_calc.rotor_fluxes()
-
         self.header = ["vr", "Bvr"]
         self.model = CalcTabModel(self.data, None, self.header)
         self.calc_tabview.setModel(self.model)
+        self.setCellSizes()
 
-        # self.calc_tabview.adjustSize()
+    def show_stator_losses(self):
 
-        self.vheader = self.calc_tabview.verticalHeader()
-        self.vheader.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
-        self.vheader.setSectionResizeMode(1, QtWidgets.QHeaderView.Fixed)
+        self.data = self.motor_results.motor_calc.stator_losses()
+        self.header = ["vs", "Psv", "PAlv"]
+        self.model = LossesTabModel(self.data, self.header)
+        self.calc_tabview.setModel(self.model)
+        self.setCellSizes()
+
+    def show_rotor_losses(self):
+        self.data = self.motor_results.motor_calc.rotor_losses()
+        self.header = ["vr", "Pssv", "Ppv"]
+        self.model = LossesTabModel(self.data, self.header)
+        self.calc_tabview.setModel(self.model)
+        self.setCellSizes()
+
+    def setCellSizes(self):
+        vheader = self.calc_tabview.verticalHeader()
+        vheader.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
+        vheader.setSectionResizeMode(1, QtWidgets.QHeaderView.Fixed)
 
         self.calc_tabview.setRowHeight(0, 30)
         self.calc_tabview.setRowHeight(1, 30)
-
+        self.calc_tabview.setRowHeight(2, 30)
         self.calc_tabview.update()
 
 

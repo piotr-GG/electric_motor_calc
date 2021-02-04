@@ -1,16 +1,16 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from flux_density import FluxDensity
+from elmag_container import ElectromagContainer
 import numpy as np
 
 
 class CalcTabModel(QtCore.QAbstractTableModel):
     def __init__(self, data, horiz_header, vert_header):
         super(CalcTabModel, self).__init__()
-        if isinstance(data, FluxDensity):
+        if issubclass(type(data), ElectromagContainer):
             self._data = data
         else:
-            return
+            raise TypeError("Wrong input data for Calculation Table Model!")
         self._horiz_header = horiz_header
         self._vert_header = vert_header
 
@@ -19,15 +19,10 @@ class CalcTabModel(QtCore.QAbstractTableModel):
             if index.row() == 0:
                 return str(self._data.order[index.column()])
             elif index.row() == 1:
-                return str(self._data.flux_dens[index.column()])
-
-            # value = self._data[index.row()][index.column()]
-            # if isinstance(value, np.float):
-            #     return str(value)
+                return str(self._data.elmag_qty[index.column()])
 
     def rowCount(self, index):
         return 2
-        # return len(self._data)
 
     def columnCount(self, index):
         return len(self._data.order)

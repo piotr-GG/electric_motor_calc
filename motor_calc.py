@@ -1,6 +1,7 @@
 from motor import Motor
 from utils import Utils
 from flux_density import FluxDensity
+from losses import Losses
 import numpy as np
 import math
 
@@ -567,6 +568,12 @@ class MotorCalc:
         else:
             print("CALCULATE ROTOR LOSSES FIRST!")
 
+    def get_motor_losses(self) -> tuple:
+        if self.calculated_stator_losses and self.calculated_rotor_losses:
+            return self.Ps, self.PAl, self.Pss, self.Pp
+        else:
+            raise Exception("Calculate stator and rotor losses first!")
+
     def stator_fluxes(self):
         if self.calculated_stator_fluxes:
             fluxes = FluxDensity(self.vs, self.Bv)
@@ -580,6 +587,26 @@ class MotorCalc:
             fluxes = FluxDensity(self.rzad_vr, self.suma_Bvr)
             fluxes.sort()
             return fluxes
+        else:
+            return None
+
+    def stator_losses(self):
+        if self.calculated_stator_losses:
+            losses_psv = Losses(self.vs, self.Psv)
+            losses_palv = Losses(self.vs, self.PAlv)
+            losses_psv.sort()
+            losses_palv.sort()
+            return losses_psv, losses_palv
+        else:
+            return None
+
+    def rotor_losses(self):
+        if self.calculated_rotor_losses:
+            losses_pssv = Losses(self.vr, self.Pssv)
+            losses_ppv = Losses(self.vr, self.Ppv)
+            losses_pssv.sort()
+            losses_ppv.sort()
+            return losses_pssv, losses_ppv
         else:
             return None
 
@@ -607,7 +634,7 @@ class MotorCalc:
 
 if __name__ == "__main__":
     motor = Motor()
-    motorCalc = MotorCalc(motor, 100)
+    motorCalc = MotorCalc(motor, limit = 5)
     motorCalc.calc_construct_params()
     motorCalc.calc_stator_flux_dens()
     motorCalc.print_stator_flux_dens()
@@ -619,3 +646,12 @@ if __name__ == "__main__":
     motorCalc.print_rotor_flux_dens()
     motorCalc.calc_rotor_losses()
     motorCalc.print_rotor_losses()
+
+
+    print("*" * 50)
+    print(motorCalc.stator_losses()[0])
+    print(motorCalc.stator_losses()[1])
+    print("*" * 50)
+    print(motorCalc.rotor_losses()[0])
+    print(motorCalc.rotor_losses()[1])
+    from collections import namedtuple
