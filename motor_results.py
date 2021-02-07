@@ -1,12 +1,13 @@
-from json import JSONDecodeError
-
 from motor_calc import MotorCalc
 from motor import Motor
 from db_conn import DBConnection, DBCreationError
-import os.path
 import datetime as dt
+from encoders.NumpyEncoder import NumpyEncoder
 import json
+from json import JSONDecodeError
 from collections import OrderedDict
+from decoders.LossesDecoder import LossesDecoder
+from definitions import ROOT_DIR
 
 
 class LoadFileError(Exception):
@@ -44,22 +45,37 @@ class MotorResults:
     def db_path(self, new_db_path):
         self.__db_path = new_db_path
 
-    def save_to_json(self, filename: str = "") -> None:
+    def save_to_json(self, filename: str = "") -> bool:
         if filename == "":
-            filename = "results_" + dt.datetime.today().strftime("%d-%m-%y %X").replace(":", ".") + ".json"
-        keys = ["Limit", "Ps", "PAL", "Pss", "Pp"];
+            filename = "results_" + dt.datetime.today().strftime("%d-%m-%y %X").replace(":", ".")
+        keys = ["Limit", "Ps", "PAl", "Pss", "Pp", "stator_losses", "rotor_losses"]
+
+        stator_losses = self.motor_calc.stator_losses_serializable()
+        rotor_losses = self.motor_calc.rotor_losses_serializable()
+
         vals = [self.motor_calc.limit, self.motor_calc.Ps, self.motor_calc.PAl,
-                self.motor_calc.Pss, self.motor_calc.Pp]
+                self.motor_calc.Pss, self.motor_calc.Pp, stator_losses, rotor_losses]
+
         f_cont = OrderedDict(zip(keys, vals))
-        with open(f"json/{filename}", "w") as f:
-            f.write(json.dumps(f_cont))
+
+        if not filename.endswith(".json"):
+            filename += ".json"
+
+        dir_to_open = ROOT_DIR + f"/json/{filename}"
+        result = 0
+        with open(dir_to_open, "w+") as f:
+            result = f.write(json.dumps(f_cont, cls=NumpyEncoder))
+        return result != 0
 
     def load_from_json(self, filename: str) -> str:
         if filename is None:
             raise LoadFileError("Filename is empty!")
         with open(filename, 'r') as f:
             try:
-                return json.load(f)
+                data = json.load(f)
+                decoder = LossesDecoder(data)
+                return decoder.decode()
+
             except JSONDecodeError:
                 return "FILE BEING LOADED IS NOT AN VALID JSON FILE!"
 
@@ -78,7 +94,6 @@ class MotorResults:
             f.write(f"PAl = {self.motor_calc.PAl}\n")
             f.write(f"Pss = {self.motor_calc.Pss}\n")
             f.write(f"Pp = {self.motor_calc.Pp}\n")
-        return True
 
     def load_from_file(self, filename: str) -> str:
         """
@@ -134,12 +149,24 @@ class MotorResults:
 
 if __name__ == "__main__":
     m = Motor()
-    m_calc = MotorCalc(m, 15)
+    m_calc = MotorCalc(m, limit=15)
     m_calc.calculate()
     m_res = MotorResults(m_calc)
+
+    m_res.save_to_json("test_3")
+
+    # limit, Ps, PAl, Pss, Pp, stator_losses, rotor_losses = \
+    #     loaded_json = m_res.load_from_json(r'json/testowy_1.json')
+
+    # loaded_json = OrderedDict(loaded_json)
+    # for k, v in loaded_json.items():
+    #     print(k, v)
+
+    # print(m_res.load_from_file(r'results/results_25-01-21 21.20.29.txt').splitlines())
+
     # m_res.save_to_DB()
-    m_res.save_to_DB()
-    print(m_res.load_from_DB(0))
+    # m_res.save_to_DB()
+    # print(m_res.load_from_DB(0))
 
     # m_res.save_to_file()
     # m_res.save_to_json()

@@ -2,8 +2,9 @@ import traceback
 
 import numpy as np
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QErrorMessage
+from PyQt5.QtWidgets import QErrorMessage, QMessageBox
 import sys
+
 
 class Utils:
     # TODO: ADD ERROR CHECKING
@@ -109,6 +110,32 @@ class Utils:
         x = error_box.exec_()
         QtWidgets.QApplication.quit()
 
+    @staticmethod
+    def show_work_in_progress_msg_box():
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Work in progress")
+        msg_box.setText("Funkcjonalność zostanie dodana w przyszłości")
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        x = msg_box.exec_()
+
+    @staticmethod
+    def show_msg_box(title: str, text: str, icon=QMessageBox.Information, standard_btns=QMessageBox.Ok):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle(title)
+        msg_box.setText(text)
+        msg_box.setIcon(icon)
+        msg_box.setStandardButtons(standard_btns)
+        x = msg_box.exec_()
+
+    @staticmethod
+    def show_error_box(title: str, text: str):
+        error_box = QErrorMessage()
+        error_box.setWindowTitle(title)
+        error_box.setMaximumSize(600, 200)
+        error_box.setMinimumSize(600, 200)
+        x = error_box.showMessage(text)
+        x = error_box.exec_()
 
     __doc__: str = "" \
                    "This class is intended to serve as an utility class container for general script"
