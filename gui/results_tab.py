@@ -9,11 +9,13 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5 import Qt
+from PyQt5.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QFileDialog
 from gui.CalcTabModel import CalcTabModel
 from gui.LossesTabModel import LossesTabModel
+from gui.help_gui import HelpDialog
 from motor_results import MotorResults
 from utils import Utils
+from definitions import ROOT_DIR
 
 
 class CalcResultsWidget(object):
@@ -25,7 +27,7 @@ class CalcResultsWidget(object):
         self.setupUi(self.Form)
         self.initVars()
         self.connectCustomSignals()
-        self.fillQLineEdits()
+        self.updateLosses()
 
     @property
     def motor_results(self):
@@ -40,9 +42,50 @@ class CalcResultsWidget(object):
 
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(640, 480)
-        self.verticalLayoutWidget = QtWidgets.QWidget(Form)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(40, 20, 101, 181))
+        Form.resize(850, 600)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
+        Form.setSizePolicy(sizePolicy)
+        Form.setMinimumSize(QtCore.QSize(850, 600))
+        Form.setMaximumSize(QtCore.QSize(850, 600))
+        Form.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        self.calc_tabview = QtWidgets.QTableView(Form)
+        self.calc_tabview.setGeometry(QtCore.QRect(60, 260, 750, 150))
+        self.calc_tabview.setObjectName("calc_tabview")
+        self.groupBox = QtWidgets.QGroupBox(Form)
+        self.groupBox.setGeometry(QtCore.QRect(380, 20, 161, 141))
+        self.groupBox.setObjectName("groupBox")
+        self.label_5 = QtWidgets.QLabel(self.groupBox)
+        self.label_5.setGeometry(QtCore.QRect(20, 20, 47, 16))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_5.setFont(font)
+        self.label_5.setObjectName("label_5")
+        self.layoutWidget = QtWidgets.QWidget(self.groupBox)
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 40, 107, 88))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.layoutWidget)
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.stator_flux_d_rbtn = QtWidgets.QRadioButton(self.layoutWidget)
+        self.stator_flux_d_rbtn.setObjectName("stator_flux_d_rbtn")
+        self.verticalLayout_5.addWidget(self.stator_flux_d_rbtn)
+        self.rotor_flux_d_rbtn = QtWidgets.QRadioButton(self.layoutWidget)
+        self.rotor_flux_d_rbtn.setObjectName("rotor_flux_d_rbtn")
+        self.verticalLayout_5.addWidget(self.rotor_flux_d_rbtn)
+        self.stator_losses_rbtn = QtWidgets.QRadioButton(self.layoutWidget)
+        self.stator_losses_rbtn.setObjectName("stator_losses_rbtn")
+        self.verticalLayout_5.addWidget(self.stator_losses_rbtn)
+        self.rotor_losses_rbtn = QtWidgets.QRadioButton(self.layoutWidget)
+        self.rotor_losses_rbtn.setObjectName("rotor_losses_rbtn")
+        self.verticalLayout_5.addWidget(self.rotor_losses_rbtn)
+        self.groupBox_5 = QtWidgets.QGroupBox(Form)
+        self.groupBox_5.setGeometry(QtCore.QRect(20, 20, 161, 221))
+        self.groupBox_5.setObjectName("groupBox_5")
+        self.verticalLayoutWidget = QtWidgets.QWidget(self.groupBox_5)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(20, 20, 121, 181))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -51,10 +94,24 @@ class CalcResultsWidget(object):
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.label_4 = QtWidgets.QLabel(self.verticalLayoutWidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_4.sizePolicy().hasHeightForWidth())
+        self.label_4.setSizePolicy(sizePolicy)
         self.label_4.setMinimumSize(QtCore.QSize(26, 0))
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_4.addWidget(self.label_4, 0, QtCore.Qt.AlignLeft)
         self.ps_val_qle = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.ps_val_qle.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.ps_val_qle.sizePolicy().hasHeightForWidth())
+        self.ps_val_qle.setSizePolicy(sizePolicy)
+        self.ps_val_qle.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.ps_val_qle.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.ps_val_qle.setAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.ps_val_qle.setObjectName("ps_val_qle")
         self.horizontalLayout_4.addWidget(self.ps_val_qle, 0, QtCore.Qt.AlignHCenter)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
@@ -65,6 +122,13 @@ class CalcResultsWidget(object):
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
         self.pal_val_qle = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.pal_val_qle.sizePolicy().hasHeightForWidth())
+        self.pal_val_qle.setSizePolicy(sizePolicy)
+        self.pal_val_qle.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.pal_val_qle.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.pal_val_qle.setObjectName("pal_val_qle")
         self.horizontalLayout.addWidget(self.pal_val_qle)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -75,6 +139,7 @@ class CalcResultsWidget(object):
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_2.addWidget(self.label_2)
         self.pss_val_qle = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.pss_val_qle.setMaximumSize(QtCore.QSize(100, 16777215))
         self.pss_val_qle.setObjectName("pss_val_qle")
         self.horizontalLayout_2.addWidget(self.pss_val_qle)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -85,60 +150,157 @@ class CalcResultsWidget(object):
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_3.addWidget(self.label_3)
         self.pp_val_qle = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.pp_val_qle.setMaximumSize(QtCore.QSize(100, 16777215))
         self.pp_val_qle.setObjectName("pp_val_qle")
         self.horizontalLayout_3.addWidget(self.pp_val_qle)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.calc_tabview = QtWidgets.QTableView(Form)
-        self.calc_tabview.setGeometry(QtCore.QRect(100, 200, 500, 150))
-        self.calc_tabview.setObjectName("calc_tabview")
-        self.groupBox = QtWidgets.QGroupBox(Form)
-        self.groupBox.setGeometry(QtCore.QRect(380, 20, 161, 141))
-        self.groupBox.setObjectName("groupBox")
-        self.rotor_losses_rbtn = QtWidgets.QRadioButton(self.groupBox)
-        self.rotor_losses_rbtn.setGeometry(QtCore.QRect(20, 100, 82, 17))
-        self.rotor_losses_rbtn.setObjectName("Straty w wirniku")
-        self.stator_losses_rbtn = QtWidgets.QRadioButton(self.groupBox)
-        self.stator_losses_rbtn.setGeometry(QtCore.QRect(20, 80, 82, 17))
-        self.stator_losses_rbtn.setObjectName("Straty w stojanie")
-        self.stator_flux_d_rbtn = QtWidgets.QRadioButton(self.groupBox)
-        self.stator_flux_d_rbtn.setGeometry(QtCore.QRect(20, 40, 101, 17))
-        self.stator_flux_d_rbtn.setObjectName("stator_flux_d_rbtn")
-        self.rotor_flux_d_rbtn = QtWidgets.QRadioButton(self.groupBox)
-        self.rotor_flux_d_rbtn.setGeometry(QtCore.QRect(20, 60, 121, 17))
-        self.rotor_flux_d_rbtn.setObjectName("rotor_flux_d_rbtn")
+        self.layoutWidget1 = QtWidgets.QWidget(Form)
+        self.layoutWidget1.setGeometry(QtCore.QRect(240, 440, 361, 101))
+        self.layoutWidget1.setObjectName("layoutWidget1")
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.layoutWidget1)
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.groupBox_2 = QtWidgets.QGroupBox(self.layoutWidget1)
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.layoutWidget2 = QtWidgets.QWidget(self.groupBox_2)
+        self.layoutWidget2.setGeometry(QtCore.QRect(20, 20, 77, 60))
+        self.layoutWidget2.setObjectName("layoutWidget2")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.layoutWidget2)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.save_to_file_pbtn = QtWidgets.QPushButton(self.layoutWidget2)
+        self.save_to_file_pbtn.setObjectName("save_to_file_pbtn")
+        self.verticalLayout_2.addWidget(self.save_to_file_pbtn)
+        self.load_from_file_pbtn = QtWidgets.QPushButton(self.layoutWidget2)
+        self.load_from_file_pbtn.setObjectName("load_from_file_pbtn")
+        self.verticalLayout_2.addWidget(self.load_from_file_pbtn)
+        self.horizontalLayout_5.addWidget(self.groupBox_2)
+        self.groupBox_3 = QtWidgets.QGroupBox(self.layoutWidget1)
+        self.groupBox_3.setObjectName("groupBox_3")
+        self.layoutWidget3 = QtWidgets.QWidget(self.groupBox_3)
+        self.layoutWidget3.setGeometry(QtCore.QRect(20, 20, 77, 54))
+        self.layoutWidget3.setObjectName("layoutWidget3")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.layoutWidget3)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.save_to_json_pbtn = QtWidgets.QPushButton(self.layoutWidget3)
+        self.save_to_json_pbtn.setObjectName("save_to_json_pbtn")
+        self.verticalLayout_3.addWidget(self.save_to_json_pbtn)
+        self.load_from_json_pbtn = QtWidgets.QPushButton(self.layoutWidget3)
+        self.load_from_json_pbtn.setObjectName("load_from_json_pbtn")
+        self.verticalLayout_3.addWidget(self.load_from_json_pbtn)
+        self.horizontalLayout_5.addWidget(self.groupBox_3)
+        self.groupBox_4 = QtWidgets.QGroupBox(self.layoutWidget1)
+        self.groupBox_4.setObjectName("groupBox_4")
+        self.layoutWidget4 = QtWidgets.QWidget(self.groupBox_4)
+        self.layoutWidget4.setGeometry(QtCore.QRect(20, 20, 77, 54))
+        self.layoutWidget4.setObjectName("layoutWidget4")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.layoutWidget4)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.save_to_DB_pbtn = QtWidgets.QPushButton(self.layoutWidget4)
+        self.save_to_DB_pbtn.setObjectName("pushButton_6")
+        self.verticalLayout_4.addWidget(self.save_to_DB_pbtn)
+        self.load_from_DB_pbtn = QtWidgets.QPushButton(self.layoutWidget4)
+        self.load_from_DB_pbtn.setObjectName("load_from_sql_pbtn")
+        self.verticalLayout_4.addWidget(self.load_from_DB_pbtn)
+        self.horizontalLayout_5.addWidget(self.groupBox_4)
+        self.groupBox_6 = QtWidgets.QGroupBox(Form)
+        self.groupBox_6.setGeometry(QtCore.QRect(200, 20, 161, 61))
+        self.groupBox_6.setObjectName("groupBox_6")
+        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.groupBox_6)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_6 = QtWidgets.QLabel(self.groupBox_6)
+        self.label_6.setMinimumSize(QtCore.QSize(30, 0))
+        self.label_6.setObjectName("label_6")
+        self.horizontalLayout_6.addWidget(self.label_6)
+        self.limit_qle = QtWidgets.QLineEdit(self.groupBox_6)
+        self.limit_qle.setObjectName("limit_qle")
+        self.horizontalLayout_6.addWidget(self.limit_qle)
+        self.verticalLayout_6.addLayout(self.horizontalLayout_6)
+        self.help_clbtn = QtWidgets.QCommandLinkButton(Form)
+        self.help_clbtn.setGeometry(QtCore.QRect(660, 20, 101, 41))
+        self.help_clbtn.setObjectName("help_clbtn")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
+        Form.setTabOrder(self.ps_val_qle, self.pal_val_qle)
+        Form.setTabOrder(self.pal_val_qle, self.pss_val_qle)
+        Form.setTabOrder(self.pss_val_qle, self.pp_val_qle)
+        Form.setTabOrder(self.pp_val_qle, self.limit_qle)
+        Form.setTabOrder(self.limit_qle, self.stator_flux_d_rbtn)
+        Form.setTabOrder(self.stator_flux_d_rbtn, self.rotor_flux_d_rbtn)
+        Form.setTabOrder(self.rotor_flux_d_rbtn, self.stator_losses_rbtn)
+        Form.setTabOrder(self.stator_losses_rbtn, self.rotor_losses_rbtn)
+        Form.setTabOrder(self.rotor_losses_rbtn, self.help_clbtn)
+        Form.setTabOrder(self.help_clbtn, self.calc_tabview)
+        Form.setTabOrder(self.calc_tabview, self.save_to_file_pbtn)
+        Form.setTabOrder(self.save_to_file_pbtn, self.load_from_file_pbtn)
+        Form.setTabOrder(self.load_from_file_pbtn, self.save_to_json_pbtn)
+        Form.setTabOrder(self.save_to_json_pbtn, self.load_from_json_pbtn)
+        Form.setTabOrder(self.load_from_json_pbtn, self.save_to_DB_pbtn)
+        Form.setTabOrder(self.save_to_DB_pbtn, self.load_from_DB_pbtn)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        Form.setWindowTitle(_translate("Form", "Wyniki obliczeń"))
+        self.groupBox.setTitle(_translate("Form", "Tabela"))
+        self.label_5.setText(_translate("Form", "Pokaż:"))
+        self.stator_flux_d_rbtn.setText(_translate("Form", "Indukcje stojana"))
+        self.rotor_flux_d_rbtn.setText(_translate("Form", "Indukcje wirnika"))
+        self.stator_losses_rbtn.setText(_translate("Form", "Straty w stojanie"))
+        self.rotor_losses_rbtn.setText(_translate("Form", "Straty w wirniku"))
+        self.groupBox_5.setTitle(_translate("Form", "Obliczone straty sumaryczne"))
         self.label_4.setText(_translate("Form", "Ps"))
         self.label.setText(_translate("Form", "PAl"))
         self.label_2.setText(_translate("Form", "Pss"))
         self.label_3.setText(_translate("Form", "Pp"))
-        self.groupBox.setTitle(_translate("Form", "Tabela"))
-        self.rotor_losses_rbtn.setText(_translate("Form", "Straty w wirniku"))
-        self.stator_losses_rbtn.setText(_translate("Form", "Straty w stojanie"))
-        self.stator_flux_d_rbtn.setText(_translate("Form", "Indukcje stojana"))
-        self.rotor_flux_d_rbtn.setText(_translate("Form", "Indukcje wirnika"))
+        self.groupBox_2.setTitle(_translate("Form", "Dane z pliku"))
+        self.save_to_file_pbtn.setText(_translate("Form", "Zapisz"))
+        self.load_from_file_pbtn.setText(_translate("Form", "Ładuj"))
+        self.groupBox_3.setTitle(_translate("Form", "Dane z JSON"))
+        self.save_to_json_pbtn.setText(_translate("Form", "Zapisz"))
+        self.load_from_json_pbtn.setText(_translate("Form", "Ładuj"))
+        self.groupBox_4.setTitle(_translate("Form", "Dane z SQL"))
+        self.save_to_DB_pbtn.setText(_translate("Form", "Zapisz"))
+        self.load_from_DB_pbtn.setText(_translate("Form", "Ładuj"))
+        self.groupBox_6.setTitle(_translate("Form", "Zakres harmonicznych"))
+        self.label_6.setText(_translate("Form", "Limit"))
+        self.help_clbtn.setText(_translate("Form", "Pomoc"))
 
     def show(self):
         self.Form.show()
 
     def initVars(self):
         self.activeState = ""
+        self.limit = self.motor_results.motor_calc.limit
+        self.Ps = self.motor_results.motor_calc.Ps
+        self.PAl = self.motor_results.motor_calc.PAl
+        self.Pss = self.motor_results.motor_calc.Pss
+        self.Pp = self.motor_results.motor_calc.Pp
+        self.stator_losses = None
+        self.rotor_losses = None
 
     def connectCustomSignals(self):
         self.rbtns = [self.stator_flux_d_rbtn, self.rotor_flux_d_rbtn, self.stator_losses_rbtn, self.rotor_losses_rbtn]
         for obj in self.rbtns:
             obj.clicked.connect(self.rbtns_toggled)
+        self.help_clbtn.clicked.connect(self.show_help_dialog)
+        self.save_to_file_pbtn.clicked.connect(self.save_to_file)
+        self.load_from_file_pbtn.clicked.connect(self.load_from_file)
+        self.save_to_DB_pbtn.clicked.connect(self.save_to_DB)
+        self.load_from_DB_pbtn.clicked.connect(self.load_from_DB)
+        self.save_to_json_pbtn.clicked.connect(self.save_to_json)
+        self.load_from_json_pbtn.clicked.connect(self.load_from_json)
 
-    def fillQLineEdits(self):
-        self.pss_val_qle.setText(str(self.motor_results.motor_calc.Pss))
-        self.pal_val_qle.setText(str(self.motor_results.motor_calc.PAl))
-        self.pp_val_qle.setText(str(self.motor_results.motor_calc.Pp))
-        self.ps_val_qle.setText(str(self.motor_results.motor_calc.Ps))
+    def updateLosses(self):
+        self.pss_val_qle.setText(str(self.Pss))
+        self.pal_val_qle.setText(str(self.PAl))
+        self.pp_val_qle.setText(str(self.Pp))
+        self.ps_val_qle.setText(str(self.Ps))
+        self.limit_qle.setText(str(self.limit))
 
     def rbtns_toggled(self):
         if self.stator_flux_d_rbtn.isChecked() and self.activeState != "STATOR":
@@ -158,24 +320,54 @@ class CalcResultsWidget(object):
             self.activeState = "ROTOR_LOSSES"
             self.show_rotor_losses()
 
+    # TODO: Add save and load for file / DB
+    def show_help_dialog(self):
+        self.help_dialog = HelpDialog()
+        self.help_dialog.show()
+
+    def save_to_file(self):
+        Utils.show_work_in_progress_msg_box()
+
+    def load_from_file(self):
+        Utils.show_work_in_progress_msg_box()
+
+    def save_to_DB(self):
+        Utils.show_work_in_progress_msg_box()
+
+    def load_from_DB(self):
+        Utils.show_work_in_progress_msg_box()
+
+    # TODO: Add save and load to/from JSON
+    def save_to_json(self):
+        filename, ok_pressed = QInputDialog.getText(self.Form, "Podaj nazwę pliku", "Podaj nazwę pliku: ",
+                                                    QLineEdit.Normal, "")
+        if ok_pressed:
+            if filename != "":
+                saved = self.motor_results.save_to_json(filename)
+                if saved:
+                    Utils.show_msg_box(title="Zapis", text="Pomyślnie zapisano wyniki")
+                else:
+                    Utils.show_msg_box(title="Zapis", text="Wystąpił błąd zapisu!", icon=QMessageBox.Warning)
+
+    def load_from_json(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename, _ = QFileDialog.getOpenFileName(self.Form, "Wybierz plik", ROOT_DIR + "/json/")
+        print(filename)
+        if filename:
+            print("Odczytujemy dane z JSONA")
+            self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses \
+                = self.motor_results.load_from_json(filename)
+            if self.limit is not None:
+                print("Powinno się pojawić okienko")
+                Utils.show_msg_box(title="Odczyt", text="Pomyślnie odczytano dane z JSONa.")
+                self.updateLosses()
+
     def show_stator_flux_d(self):
         self.data = self.motor_results.motor_calc.stator_fluxes()
         self.header = ["vs", "Bvs"]
         self.model = CalcTabModel(self.data, None, self.header)
         self.calc_tabview.setModel(self.model)
-        # self.calc_tabview.adjustSize()
-
-        # self.hheader = self.calc_tabview.horizontalHeader()
-        #
-        # self.hheader.setDefaultSectionSize(60)
-        # self.vheader = self.calc_tabview.verticalHeader()
-        #
-        # self.vheader.setDefaultSectionSize(30)
-        # self.calc_tabview.setFixedHeight(100)
-        # self.vheader.setSectionResizeMode(0, QtWidgets.QHeaderView.Fixed)
-        # self.vheader.setSectionResizeMode(1, QtWidgets.QHeaderView.Fixed)
-
-        # self.calc_tabview.update()
         self.setCellSizes()
 
     def show_rotor_flux_d(self):
@@ -186,17 +378,18 @@ class CalcResultsWidget(object):
         self.setCellSizes()
 
     def show_stator_losses(self):
-
-        self.data = self.motor_results.motor_calc.stator_losses()
+        if self.stator_losses is None:
+            self.stator_losses = self.motor_results.motor_calc.stator_losses()
         self.header = ["vs", "Psv", "PAlv"]
-        self.model = LossesTabModel(self.data, self.header)
+        self.model = LossesTabModel(self.stator_losses, self.header)
         self.calc_tabview.setModel(self.model)
         self.setCellSizes()
 
     def show_rotor_losses(self):
-        self.data = self.motor_results.motor_calc.rotor_losses()
+        if self.rotor_losses is None:
+            self.rotor_losses = self.motor_results.motor_calc.rotor_losses()
         self.header = ["vr", "Pssv", "Ppv"]
-        self.model = LossesTabModel(self.data, self.header)
+        self.model = LossesTabModel(self.rotor_losses, self.header)
         self.calc_tabview.setModel(self.model)
         self.setCellSizes()
 

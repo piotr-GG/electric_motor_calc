@@ -9,14 +9,17 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
+from gui.help_gui import HelpDialog
 from results_tab import CalcResultsWidget
 from motor_calc import MotorCalc
 from motor import Motor
 from motor_results import MotorResults
-from gui.auxiliary.calculation_matplotlib import  CalculateMatplotlib
+from gui.auxiliary.calculation_matplotlib import CalculateMatplotlib
 from utils import Utils
 
+# TODO: ADD IMPORT BUTTON FOR MOTOR PARAMETERS
 
 class UiMainWindow(object):
     def setupUi(self, MainWindow):
@@ -27,8 +30,8 @@ class UiMainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMinimumSize(QtCore.QSize(450, 400))
-        MainWindow.setMaximumSize(QtCore.QSize(600, 400))
+        MainWindow.setMinimumSize(QtCore.QSize(550, 400))
+        MainWindow.setMaximumSize(QtCore.QSize(550, 400))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -112,11 +115,12 @@ class UiMainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.actionOtw_rz = QtWidgets.QAction(MainWindow)
-        self.actionOtw_rz.setObjectName("actionOtw_rz")
-        self.menuZamknij.addAction(self.actionOtw_rz)
+        self.actionHelp = QtWidgets.QAction(MainWindow)
+        self.actionHelp.setObjectName("actionHelp")
+        self.menuZamknij.addAction(self.actionHelp)
         self.menubar.addAction(self.menuZamknij.menuAction())
-
+        self.limit_lower_qle.setText("1")
+        self.limit_upper_qle.setText("20")
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         # Setup custom variables and attributes
@@ -126,7 +130,7 @@ class UiMainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Obliczanie strat dodatkowych silnika"))
         self.centralwidget.setWhatsThis(
-            _translate("MainWindow", "<html><head/><body><p>Co to jest??!!!!</p></body></html>"))
+            _translate("MainWindow", ""))
         self.label.setText(_translate("MainWindow", "ks"))
         self.label_2.setText(_translate("MainWindow", "kr"))
         self.label_3.setText(_translate("MainWindow", "gs"))
@@ -138,7 +142,7 @@ class UiMainWindow(object):
         self.label_7.setText(_translate("MainWindow", "max"))
         self.matplotlib_btn.setText(_translate("MainWindow", "Zbadaj wpływ"))
         self.menuZamknij.setTitle(_translate("MainWindow", "Opcje"))
-        self.actionOtw_rz.setText(_translate("MainWindow", "Otwórz"))
+        self.actionHelp.setText(_translate("MainWindow", "Pomoc"))
 
     def customSetup(self):
         self.ks_val_qle.setText("5")
@@ -151,6 +155,17 @@ class UiMainWindow(object):
         self.matplotlib_btn.clicked.connect(self.runMatplotlib)
         self.calc_tab = None
         self.results_tab = None
+
+        self.help_ui = None
+        self.actionHelp.triggered.connect(self.show_help_dialog)
+
+    def show_help_dialog(self):
+        self.help_ui = HelpDialog()
+        self.help_ui.show()
+
+
+    def show_work_in_progress(self):
+        Utils.show_work_in_progress_msg_box()
 
     def runMatplotlib(self):
         limit_lower = int(self.limit_lower_qle.text())

@@ -610,6 +610,14 @@ class MotorCalc:
         else:
             return None
 
+    def stator_losses_serializable(self):
+        losses_psv, losses_palv = self.stator_losses()
+        return {"vs": losses_psv.order, "psv": losses_psv.losses, "palv": losses_palv.losses}
+
+    def rotor_losses_serializable(self):
+        losses_pssv, losses_ppv = self.rotor_losses()
+        return {"vr": losses_pssv.order, "pssv": losses_pssv.losses, "ppv": losses_ppv.losses}
+
     def __str__(self):
         txt = ""
         pl_eng_dict = {True: "Tak", False: "Nie"}
@@ -634,7 +642,7 @@ class MotorCalc:
 
 if __name__ == "__main__":
     motor = Motor()
-    motorCalc = MotorCalc(motor, limit = 5)
+    motorCalc = MotorCalc(motor, limit=5)
     motorCalc.calc_construct_params()
     motorCalc.calc_stator_flux_dens()
     motorCalc.print_stator_flux_dens()
@@ -646,7 +654,6 @@ if __name__ == "__main__":
     motorCalc.print_rotor_flux_dens()
     motorCalc.calc_rotor_losses()
     motorCalc.print_rotor_losses()
-
 
     print("*" * 50)
     print(motorCalc.stator_losses()[0])

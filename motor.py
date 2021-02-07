@@ -1,12 +1,19 @@
-import numpy as np
 import math
+from utils import Utils
 
 
 class Motor:
     """
     Most basic class for instantiating a motor object and providing several basic methods
     """
-    def __init__(self):
+
+    def __init__(self, val_dict=None):
+        if val_dict is None:
+            self.initDefaultVals()
+        else:
+            self.initFromDict(val_dict)
+
+    def initDefaultVals(self):
         self.p = 2  # Liczba par biegunów [-]
         self.Qs = 36  # Liczba żłobków stojana [-]
         self.Qr = 28  # Liczba żłobków wirnika [-]
@@ -54,12 +61,60 @@ class Motor:
         self.Xqra01 = 5.9276e-05  # Reaktancja niepodlegajaca wypieraniu pradu, niesprowadzona
         self.Xpr = 0.00017001  # Reaktancja podlegajaca wypieraniu pradu, sprowadzona
 
-    def load_params_from_file(self):
-        pass
+    def initFromDict(self, val_dict: dict):
+        try:
+            self.p = val_dict["p"]
+            self.Qs = val_dict["Qs"]
+            self.Qr = val_dict["Qr"]
+            self.W = val_dict["W"]
+            self.bss = val_dict["bss"]
+            self.bsr = val_dict["bsr"]
+            self.bts = val_dict["bts"]
+            self.btr = val_dict["btr"]
+            self.delta = val_dict["delta"]
+            self.N = val_dict["N"]
+            self.m = val_dict["m"]
+            self.ds = val_dict["ds"]
+            self.dr = self.ds - 2 * self.delta  # Szerokość zewnętrzna wirnika [mm]
+            self.s = val_dict["s"]
+            self.Bdelta = val_dict["Bdelta"]
+            self.mi0 = 1.257 * 10 ** -6  # Przenikalnosc magnetyczna prozni
+            self.cosfi = val_dict["cosfi"]
+            self.sinfi = math.sqrt(1 - self.cosfi ** 2)  # Sinus fi [-]
+            self.s_p = val_dict["s_p"]
+            self.fs = val_dict["fs"]
+            self.roFe =  val_dict["roFe"]
+            self.lFe = val_dict["lFe"]
+            self.pCl = val_dict["pCl"]
+            self.kFe = val_dict["kFe"]
+            self.lpr = val_dict["lpr"]
+            self.spr = val_dict["spr"]
+            self.h = val_dict["h"]
+            self.Rc = val_dict["Rc"]
+            self.ks = val_dict["ks"]
+            self.mts = val_dict["mts"]
+            self.Is = val_dict["Is"]
+            self.I0 = val_dict["I0"]
+            self.Isph = self.Is / math.sqrt(3)  # Prąd fazowy pobierany z sieci [A]
+            self.I0ph = self.I0 / math.sqrt(3)  # Prad fazowy biegu jalowego [A]
+            self.Ipr = val_dict["Ipr"]
+            self.Vp = val_dict["Vp"]
+            self.Vsd = val_dict["Vsd"]
+            self.km = 1 + self.Vsd / self.Vp  # Współczynnik nasycenia obwodu magnetycznego [-]
+            self.gammar_0 = val_dict["gammar_0"]
+            self.tetar = val_dict["tetar"]
+            self.kgamma = val_dict["kgamma"]
+            self.dc = val_dict["dc"]
+            self.sc = val_dict["sc"]
 
-    def calc_something(self):
-        self.p = 666
-        self.Qs = self.p + self.Qs
+            self.Xqra01 = val_dict["Xqra01"]
+            self.Xpr = val_dict["Xpr"]
+            # for k, v in val_dict.items():
+            #     print(k, v)
+        except KeyError:
+            Utils.show_error_box("Błąd",
+                                 "W trakcie importu danych silnika z Excela wystąpił błąd: "
+                                 "Nie znaleziono danego parametru")
 
     def __str__(self):
         txt = ""
@@ -81,7 +136,7 @@ class Motor:
 
     @p.setter
     def p(self, val):
-        self.__p = val
+        self.__p = int(val)
 
     @property
     def Qs(self):
@@ -89,7 +144,7 @@ class Motor:
 
     @Qs.setter
     def Qs(self, val):
-        self.__Qs = val
+        self.__Qs = int(val)
 
     @property
     def Qr(self):
@@ -97,7 +152,7 @@ class Motor:
 
     @Qr.setter
     def Qr(self, val):
-        self.__Qr = val
+        self.__Qr = int(val)
 
     @property
     def W(self):
@@ -105,7 +160,7 @@ class Motor:
 
     @W.setter
     def W(self, value):
-        self.__W = value
+        self.__W = int(value)
 
     @property
     def bss(self):
@@ -153,7 +208,7 @@ class Motor:
 
     @N.setter
     def N(self, value):
-        self.__N = value
+        self.__N = int(value)
 
     @property
     def m(self):
@@ -161,7 +216,7 @@ class Motor:
 
     @m.setter
     def m(self, value):
-        self.__m = value
+        self.__m = int(value)
 
     @property
     def ds(self):
@@ -185,7 +240,7 @@ class Motor:
 
     @s.setter
     def s(self, value):
-        self.__s = value
+        self.__s = int(value)
 
     @property
     def Bdelta(self):
