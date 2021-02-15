@@ -1,4 +1,4 @@
-from flux_density import FluxDensity
+from model.flux_density import FluxDensity
 import unittest
 import numpy as np
 

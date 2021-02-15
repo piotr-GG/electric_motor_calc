@@ -1,5 +1,5 @@
 import math
-from utils import Utils
+from utils.utils import Utils
 
 
 class Motor:

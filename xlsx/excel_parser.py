@@ -1,6 +1,6 @@
 import pandas as pd
 from definitions import ROOT_DIR
-from motor import Motor
+from model.motor import Motor
 
 
 class ExcelParser:

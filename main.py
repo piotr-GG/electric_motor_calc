@@ -1,13 +1,20 @@
-from motor_calc import MotorCalc
-from motor import Motor
-from motor_results import MotorResults
+from PyQt5 import QtWidgets
+
+from gui.main_gui import MainGUI
+from model.motor_calc import MotorCalc
+from model.motor import Motor
+from model.motor_results import MotorResults
+from utils.utils import Utils
 
 if __name__ == "__main__":
-    test_motor = Motor()
-    limit = 5
-    motor_calc = MotorCalc(test_motor, limit=0, kls=10, klr=10, gs=10, gr=10)
-    motor_calc.calculate()
-    motor_results = MotorResults(motor_calc)
-    print(motor_results)
+    import sys
+
+    sys.excepthook = Utils.excepthook_errormsg
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = MainGUI()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
 
 

@@ -1,5 +1,5 @@
 import json
-from losses import Losses
+from model.losses import Losses
 import numpy as np
 
 

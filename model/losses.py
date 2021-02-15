@@ -1,4 +1,5 @@
-from elmag_container import ElectromagContainer
+from model.elmag_container import ElectromagContainer
+import enum
 
 
 class Losses(ElectromagContainer):
@@ -24,6 +25,13 @@ class Losses(ElectromagContainer):
             return super(Losses, self).__eq__(other)
         else:
             raise TypeError("Wrong operands type!")
+
+
+class LossType:
+    LOSS_PSS = 1
+    LOSS_PP = 2
+    LOSS_PS = 3
+    LOSS_PAL = 4
 
 
 if __name__ == "__main__":

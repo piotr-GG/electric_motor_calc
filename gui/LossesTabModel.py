@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from losses import Losses
+from model.losses import Losses
 
 
 class LossesTabModel(QtCore.QAbstractTableModel):

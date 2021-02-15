@@ -1,4 +1,4 @@
-from elmag_container import ElectromagContainer
+from model.elmag_container import ElectromagContainer
 import numpy as np
 
 

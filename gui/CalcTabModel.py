@@ -1,7 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from elmag_container import ElectromagContainer
-import numpy as np
+from model.elmag_container import ElectromagContainer
 
 
 class CalcTabModel(QtCore.QAbstractTableModel):

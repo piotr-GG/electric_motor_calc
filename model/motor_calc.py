@@ -1,17 +1,13 @@
-from motor import Motor
-from utils import Utils
-from flux_density import FluxDensity
-from losses import Losses
+from model.motor import Motor
+from utils.utils import Utils
+from model.flux_density import FluxDensity
+from model.losses import Losses
 import numpy as np
 import math
 
 
 def print_var_value(var, name: str):
     print(f"{name} = {var}")
-
-
-# TODO:
-# Replace exising B and vs with FluxDensity() class instances
 
 
 class MotorCalc:
@@ -267,6 +263,7 @@ class MotorCalc:
         self.kls = self.kls[self.kls != 0]
         self.vls = self.kls * self.m.Qs + self.m.p
         self.x = 3 * self.q * self.kls * (1 - self.y) + self.kls + 1
+        self.x = np.around(self.x, decimals=0)
         self.a = (-1) ** self.x
         self.ms = (self.m.bss / self.m.delta - 0.7) / 3.3
         self.beta = 0.43 * (1 - np.exp(-self.ms))
@@ -495,34 +492,26 @@ class MotorCalc:
 
         # USUWANIE DUPLIKATÓW
 
-        # np.savez("fixtures/duplikaty_z_vrs, #" + str(limit), x=vrs, y=Bfvrs)
         self.vrs, self.Bfvrs = Utils.remove_flux_dens_duplicates(self.vrs, self.Bfvrs)
-        # np.savez("fixtures/duplikaty_z_vrs_results, #" + str(limit), x=vrs, y=Bfvrs)
 
         self.suma_Bvr = self.Bfvrs
         self.rzad_vr = self.vrs
         self.suma_fr = self.frs
 
-        # Sumowanie Bfvrs z Blrkp
         self.rzad_vr = np.hstack((self.rzad_vr, self.vrlp))
         self.suma_Bvr = np.hstack((self.suma_Bvr, self.Blkrp))
 
-        # np.savez("fixtures/sumowanie_Bfvrs_z_Blkrp, #" + str(limit), x=rzad_vr, y=suma_Bvr)
         self.rzad_vr, self.suma_Bvr = Utils.remove_flux_dens_duplicates(self.rzad_vr, self.suma_Bvr)
-        # np.savez("fixtures/sumowanie_Bfvrs_z_Blkrp_results, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
         # Sumowanie z Blrs
 
         self.rzad_vr = np.hstack((self.rzad_vr, self.vlrv))
         self.suma_Bvr = np.hstack((self.suma_Bvr, self.Blrs))
 
-        # np.savez("fixtures/sumowanie_z_Blrs, #" + str(limit), x=rzad_vr, y=suma_Bvr)
         self.rzad_vr, self.suma_Bvr = Utils.remove_flux_dens_duplicates(self.rzad_vr, self.suma_Bvr)
-        # np.savez("fixtures/sumowanie_z_Blrs_results, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
         self.rzad_vr = np.hstack((self.rzad_vr, self.vrp))
         self.suma_Bvr = np.hstack((self.suma_Bvr, self.Bfvp))
-        # np.savez("fixtures/sumowanie_z_Bfvp, #" + str(limit), x=rzad_vr, y=suma_Bvr)
 
         self.rzad_vr, self.suma_Bvr = Utils.remove_flux_dens_duplicates_sqrt(self.rzad_vr, self.suma_Bvr)
         self.calculated_rotor_flux_dens = True
@@ -661,4 +650,3 @@ if __name__ == "__main__":
     print("*" * 50)
     print(motorCalc.rotor_losses()[0])
     print(motorCalc.rotor_losses()[1])
-    from collections import namedtuple

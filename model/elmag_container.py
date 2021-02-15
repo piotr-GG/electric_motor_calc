@@ -59,3 +59,6 @@ class ElectromagContainer:
             return False
         else:
             return np.allclose(self.order, other.order) and np.allclose(self.elmag_qty, other.elmag_qty)
+
+    def to_list(self):
+        return self.order.tolist(), self.elmag_qty.tolist()

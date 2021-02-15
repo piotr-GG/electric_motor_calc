@@ -1,5 +1,5 @@
-from motor import Motor
-from motor_calc import MotorCalc
+from model.motor import Motor
+from model.motor_calc import MotorCalc
 import matplotlib.pyplot as plt
 
 

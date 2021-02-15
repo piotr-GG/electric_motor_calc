@@ -13,9 +13,12 @@ from PyQt5.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QFileDialog
 from gui.CalcTabModel import CalcTabModel
 from gui.LossesTabModel import LossesTabModel
 from gui.help_gui import HelpDialog
-from motor_results import MotorResults
-from utils import Utils
+from model.motor_results import MotorResults
+from utils.utils import Utils
 from definitions import ROOT_DIR
+from data_transfer.db_data_transfer import DBDataTransfer
+from data_transfer.json_data_transfer import JSONDataTransfer
+from data_transfer.numpy_data_transfer import NumpyDataTransfer
 
 
 class CalcResultsWidget(object):
@@ -257,7 +260,7 @@ class CalcResultsWidget(object):
         self.label.setText(_translate("Form", "PAl"))
         self.label_2.setText(_translate("Form", "Pss"))
         self.label_3.setText(_translate("Form", "Pp"))
-        self.groupBox_2.setTitle(_translate("Form", "Dane z pliku"))
+        self.groupBox_2.setTitle(_translate("Form", "Dane z pliku .npz"))
         self.save_to_file_pbtn.setText(_translate("Form", "Zapisz"))
         self.load_from_file_pbtn.setText(_translate("Form", "Ładuj"))
         self.groupBox_3.setTitle(_translate("Form", "Dane z JSON"))
@@ -288,13 +291,14 @@ class CalcResultsWidget(object):
         for obj in self.rbtns:
             obj.clicked.connect(self.rbtns_toggled)
         self.help_clbtn.clicked.connect(self.show_help_dialog)
-        self.save_to_file_pbtn.clicked.connect(self.save_to_file)
-        self.load_from_file_pbtn.clicked.connect(self.load_from_file)
+        self.save_to_file_pbtn.clicked.connect(self.save_to_npz_file)
+        self.load_from_file_pbtn.clicked.connect(self.load_from_npz_file)
         self.save_to_DB_pbtn.clicked.connect(self.save_to_DB)
         self.load_from_DB_pbtn.clicked.connect(self.load_from_DB)
         self.save_to_json_pbtn.clicked.connect(self.save_to_json)
         self.load_from_json_pbtn.clicked.connect(self.load_from_json)
 
+    # TODO: ADD SETTING NEW MODEL FOR TABLE
     def updateLosses(self):
         self.pss_val_qle.setText(str(self.Pss))
         self.pal_val_qle.setText(str(self.PAl))
@@ -325,30 +329,57 @@ class CalcResultsWidget(object):
         self.help_dialog = HelpDialog()
         self.help_dialog.show()
 
-    def save_to_file(self):
-        Utils.show_work_in_progress_msg_box()
+    def save_to_npz_file(self):
+        filename, ok_pressed = QInputDialog.getText(self.Form, "Podaj nazwę pliku", "Proszę podać nazwę pliku:")
+        if ok_pressed:
+            if filename != "":
+                saved = NumpyDataTransfer.export_data(self.motor_results.motor_calc, filename)
+                if saved:
+                    Utils.show_msg_box(title="Zapis danych", text="Pomyślnie zapisano dane.", parent=self.Form)
+                else:
+                    Utils.show_error_box(title="(Zapis danych",
+                                         text="Wystąpił błąd podczas próby zapisanu do bazy danych!", parent=self.Form)
 
-    def load_from_file(self):
-        Utils.show_work_in_progress_msg_box()
+    def load_from_npz_file(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename, _ = QFileDialog.getOpenFileName(self.Form, "Wybierz plik", ROOT_DIR + "/npz/")
+        if not filename.endswith(".npz"):
+            Utils.show_error_box(title="Błędny format pliku", text="Proszę wybrać format pliku .npz!", parent=self.Form)
+            return
+        else:
+            self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses = NumpyDataTransfer.import_data(
+                filename)
+            Utils.show_msg_box(title="Zapis danych", text="Pomyślnie wczytano dane.", parent=self.Form)
+            self.updateLosses()
 
     def save_to_DB(self):
-        Utils.show_work_in_progress_msg_box()
+        id_added = DBDataTransfer.export_data(self.motor_results.motor_calc)
+        if id_added != -1:
+            Utils.show_msg_box(title="Zapis danych", text=f"ID zapisanego rekordu = {id_added}")
+        else:
+            Utils.show_error_box(title="Zapis danych", text="Wystąpił błąd podczas próby zapisu do bazy danych!")
 
+    # TODO: ADD ERROR CHECKING
     def load_from_DB(self):
-        Utils.show_work_in_progress_msg_box()
+        id = Utils.get_int_input_box(self.Form)
+        self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses = DBDataTransfer.import_data(
+            id)
+        self.updateLosses()
 
-    # TODO: Add save and load to/from JSON
+    # TODO: MOVE TO SEPARATE CLASS
     def save_to_json(self):
         filename, ok_pressed = QInputDialog.getText(self.Form, "Podaj nazwę pliku", "Podaj nazwę pliku: ",
                                                     QLineEdit.Normal, "")
         if ok_pressed:
             if filename != "":
-                saved = self.motor_results.save_to_json(filename)
+                saved = JSONDataTransfer.export_data(self.motor_results.motor_calc, filename)
                 if saved:
                     Utils.show_msg_box(title="Zapis", text="Pomyślnie zapisano wyniki")
                 else:
                     Utils.show_msg_box(title="Zapis", text="Wystąpił błąd zapisu!", icon=QMessageBox.Warning)
 
+    # TODO: MOVE TO SEPARATE CLASS
     def load_from_json(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -357,7 +388,7 @@ class CalcResultsWidget(object):
         if filename:
             print("Odczytujemy dane z JSONA")
             self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses \
-                = self.motor_results.load_from_json(filename)
+                = JSONDataTransfer.import_data(filename)
             if self.limit is not None:
                 print("Powinno się pojawić okienko")
                 Utils.show_msg_box(title="Odczyt", text="Pomyślnie odczytano dane z JSONa.")
