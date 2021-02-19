@@ -69,11 +69,79 @@ class DBConnection:
         return self.fetchall()
 
     def create_db(self, path):
-        pass
-
+        with sqlite3.connect(path) as db:
+            self._conn = sqlite3.connect(path)
+            self._cursor = self._conn.cursor()
+            # MotorResults table
+            stmt = '''CREATE TABLE MotorResults (ID INTEGER PRIMARY KEY AUTOINCREMENT, limits INTEGER NOT NULL, 
+            kls INTEGER NOT NULL, klr INTEGER NOT NULL, gs INTEGER NOT NULL, gr INTEGER NOT NULL, Ps REAL NOT NULL, 
+            PAl REAL NOT NULL, Pss REAL NOT NULL, Pp REAL NOT NULL) '''
+            self.execute(stmt)
+            # Pss_losses table
+            stmt = '''CREATE TABLE "Pss_losses" (
+                    "ID"	INTEGER,
+                    "order"	INTEGER,
+                    "value"	REAL NOT NULL,
+                    "result_ID"	INTEGER,
+                    PRIMARY KEY("ID" AUTOINCREMENT),
+                    FOREIGN KEY("result_ID") REFERENCES "MotorResults" ("ID"))
+                            '''
+            self.execute(stmt)
+            # Pp_losses table
+            stmt = '''CREATE TABLE "Pp_losses" (
+                    "ID"	INTEGER,
+                    "order"	INTEGER,
+                    "value"	REAL NOT NULL,
+                    "result_ID"	INTEGER,
+                    PRIMARY KEY("ID" AUTOINCREMENT),
+                    FOREIGN KEY("result_ID") REFERENCES "MotorResults" ("ID"))
+                    '''
+            self.execute(stmt)
+            # Ps_losses
+            stmt = '''CREATE TABLE "Ps_losses" (
+                    "ID"	INTEGER,
+                    "order"	INTEGER,
+                    "value"	REAL NOT NULL,
+                    "result_ID"	INTEGER,
+                    PRIMARY KEY("ID" AUTOINCREMENT),
+                    FOREIGN KEY("result_ID") REFERENCES "MotorResults" ("ID"))
+                    '''
+            self.execute(stmt)
+            # PAL_losses
+            stmt = '''CREATE TABLE "PAl_losses" (
+                    "ID"	INTEGER,
+                    "order"	INTEGER,
+                    "value"	REAL NOT NULL,
+                    "result_ID"	INTEGER,
+                    PRIMARY KEY("ID" AUTOINCREMENT),
+                    FOREIGN KEY("result_ID") REFERENCES "MotorResults" ("ID"))
+                    '''
+            self.execute(stmt)
+            # stator_fluxes
+            stmt = '''CREATE TABLE "stator_fluxes" (
+                    "ID"	INTEGER,
+                    "order"	INTEGER,
+                    "value"	REAL NOT NULL,
+                    "result_ID"	INTEGER,
+                    PRIMARY KEY("ID" AUTOINCREMENT),
+                    FOREIGN KEY("result_ID") REFERENCES "MotorResults" ("ID"))
+                    '''
+            db.execute(stmt)
+            # rotor_fluxes
+            stmt = '''CREATE TABLE "rotor_fluxes" (
+                                "ID"	INTEGER,
+                                "order"	INTEGER,
+                                "value"	REAL NOT NULL,
+                                "result_ID"	INTEGER,
+                                PRIMARY KEY("ID" AUTOINCREMENT),
+                                FOREIGN KEY("result_ID") REFERENCES "MotorResults" ("ID"))
+                                '''
+            db.execute(stmt)
+        return True
 
 if __name__ == "__main__":
     from data_transfer.db_data_transfer import DBDataTransfer
+
     motor = Motor()
     motorCalc = MotorCalc(motor, limit=5)
     motorCalc.calculate()

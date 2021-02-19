@@ -29,6 +29,11 @@ class FluxDensity(ElectromagContainer):
             raise TypeError("Wrong operands type!")
 
 
+class FluxType:
+    StatorFlux = 1
+    RotorFlux = 2
+
+
 if __name__ == "__main__":
     Bls = FluxDensity(np.array([1.0, 2.0, 3.0, -2.0, -3.0, -88, -23]), np.array([1.0, 2.3, 3.9, -5, -4, -82, -20]))
     Bls.sort()

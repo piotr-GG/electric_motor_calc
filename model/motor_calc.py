@@ -28,6 +28,18 @@ class MotorCalc:
         self.calculated_rotor_flux_dens = False
         self.calculated_rotor_losses = False
 
+        # vars for saving the constructor parameters passed
+        if limit == 0:
+            self.kls_ = kls
+            self.klr_ = klr
+            self.gs_ = gs
+            self.gr_ = gr
+        else:
+            self.kls_ = limit
+            self.klr_ = limit
+            self.gs_ = limit
+            self.gr_ = limit
+
         self.kls = kls
         self.klr = klr
         self.gs = gs

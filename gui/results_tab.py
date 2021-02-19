@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QInputDialog, QLineEdit, QMessageBox, QFileDialog
+
+from db.queries import Queries
 from gui.CalcTabModel import CalcTabModel
 from gui.LossesTabModel import LossesTabModel
 from gui.help_gui import HelpDialog
@@ -208,21 +210,60 @@ class CalcResultsWidget(object):
         self.load_from_DB_pbtn.setObjectName("load_from_sql_pbtn")
         self.verticalLayout_4.addWidget(self.load_from_DB_pbtn)
         self.horizontalLayout_5.addWidget(self.groupBox_4)
-        self.groupBox_6 = QtWidgets.QGroupBox(Form)
-        self.groupBox_6.setGeometry(QtCore.QRect(200, 20, 161, 61))
-        self.groupBox_6.setObjectName("groupBox_6")
-        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.groupBox_6)
-        self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.label_6 = QtWidgets.QLabel(self.groupBox_6)
-        self.label_6.setMinimumSize(QtCore.QSize(30, 0))
-        self.label_6.setObjectName("label_6")
-        self.horizontalLayout_6.addWidget(self.label_6)
-        self.limit_qle = QtWidgets.QLineEdit(self.groupBox_6)
-        self.limit_qle.setObjectName("limit_qle")
-        self.horizontalLayout_6.addWidget(self.limit_qle)
-        self.verticalLayout_6.addLayout(self.horizontalLayout_6)
+
+        self.coeff_groupbox = QtWidgets.QGroupBox(Form)
+        self.coeff_groupbox.setGeometry(QtCore.QRect(200, 20, 161, 181))
+        self.coeff_groupbox.setObjectName("groupBox_6")
+        self.coeff_vert_layout = QtWidgets.QVBoxLayout(self.coeff_groupbox)
+        self.coeff_vert_layout.setObjectName("verticalLayout_6")
+
+        # self.verticalLayoutWidget.setGeometry(QtCore.QRect(20, 20, 121, 181))
+
+        self.ks_hor_layout = QtWidgets.QHBoxLayout()
+        self.ks_hor_layout.setObjectName("horizontalLayout_6")
+        self.ks_label = QtWidgets.QLabel(self.coeff_groupbox)
+        self.ks_label.setMinimumSize(QtCore.QSize(30, 0))
+        self.ks_label.setObjectName("label_6")
+        self.ks_hor_layout.addWidget(self.ks_label)
+        self.ks_qle = QtWidgets.QLineEdit(self.coeff_groupbox)
+        self.ks_qle.setObjectName("ks_qle")
+        self.ks_hor_layout.addWidget(self.ks_qle)
+
+        self.kr_hor_layout = QtWidgets.QHBoxLayout()
+        self.kr_hor_layout.setObjectName("horizontalLayout_7")
+        self.kr_label = QtWidgets.QLabel(self.coeff_groupbox)
+        self.kr_label.setMinimumSize(QtCore.QSize(30, 0))
+        self.kr_label.setObjectName("label_7")
+        self.kr_hor_layout.addWidget(self.kr_label)
+        self.kr_qle = QtWidgets.QLineEdit(self.coeff_groupbox)
+        self.kr_qle.setObjectName("kr_qle")
+        self.kr_hor_layout.addWidget(self.kr_qle)
+
+        self.gs_hor_layout = QtWidgets.QHBoxLayout()
+        self.gs_hor_layout.setObjectName("gs_hor_layout")
+        self.gs_label = QtWidgets.QLabel(self.coeff_groupbox)
+        self.gs_label.setMinimumSize(QtCore.QSize(30, 0))
+        self.gs_label.setObjectName("gs_label")
+        self.gs_hor_layout.addWidget(self.gs_label)
+        self.gs_qle = QtWidgets.QLineEdit(self.coeff_groupbox)
+        self.gs_qle.setObjectName("gs_qle")
+        self.gs_hor_layout.addWidget(self.gs_qle)
+
+        self.gr_hor_layout = QtWidgets.QHBoxLayout()
+        self.gr_hor_layout.setObjectName("gr_hor_layout")
+        self.gr_label = QtWidgets.QLabel(self.coeff_groupbox)
+        self.gr_label.setMinimumSize(QtCore.QSize(30, 0))
+        self.gr_label.setObjectName("gr_label")
+        self.gr_hor_layout.addWidget(self.gr_label)
+        self.gr_qle = QtWidgets.QLineEdit(self.coeff_groupbox)
+        self.gr_qle.setObjectName("gr_qle")
+        self.gr_hor_layout.addWidget(self.gr_qle)
+
+        self.coeff_vert_layout.addLayout(self.ks_hor_layout)
+        self.coeff_vert_layout.addLayout(self.kr_hor_layout)
+        self.coeff_vert_layout.addLayout(self.gs_hor_layout)
+        self.coeff_vert_layout.addLayout(self.gr_hor_layout)
+
         self.help_clbtn = QtWidgets.QCommandLinkButton(Form)
         self.help_clbtn.setGeometry(QtCore.QRect(660, 20, 101, 41))
         self.help_clbtn.setObjectName("help_clbtn")
@@ -232,8 +273,8 @@ class CalcResultsWidget(object):
         Form.setTabOrder(self.ps_val_qle, self.pal_val_qle)
         Form.setTabOrder(self.pal_val_qle, self.pss_val_qle)
         Form.setTabOrder(self.pss_val_qle, self.pp_val_qle)
-        Form.setTabOrder(self.pp_val_qle, self.limit_qle)
-        Form.setTabOrder(self.limit_qle, self.stator_flux_d_rbtn)
+        Form.setTabOrder(self.pp_val_qle, self.ks_qle)
+        Form.setTabOrder(self.ks_qle, self.stator_flux_d_rbtn)
         Form.setTabOrder(self.stator_flux_d_rbtn, self.rotor_flux_d_rbtn)
         Form.setTabOrder(self.rotor_flux_d_rbtn, self.stator_losses_rbtn)
         Form.setTabOrder(self.stator_losses_rbtn, self.rotor_losses_rbtn)
@@ -269,8 +310,11 @@ class CalcResultsWidget(object):
         self.groupBox_4.setTitle(_translate("Form", "Dane z SQL"))
         self.save_to_DB_pbtn.setText(_translate("Form", "Zapisz"))
         self.load_from_DB_pbtn.setText(_translate("Form", "Ładuj"))
-        self.groupBox_6.setTitle(_translate("Form", "Zakres harmonicznych"))
-        self.label_6.setText(_translate("Form", "Limit"))
+        self.coeff_groupbox.setTitle(_translate("Form", "Zakres harmonicznych"))
+        self.ks_label.setText(_translate("Form", "ks"))
+        self.kr_label.setText(_translate("Form", "kr"))
+        self.gs_label.setText(_translate("Form", "gs"))
+        self.gr_label.setText(_translate("Form", "gr"))
         self.help_clbtn.setText(_translate("Form", "Pomoc"))
 
     def show(self):
@@ -279,11 +323,19 @@ class CalcResultsWidget(object):
     def initVars(self):
         self.activeState = ""
         self.limit = self.motor_results.motor_calc.limit
+        self.ks = self.motor_results.motor_calc.kls_
+        self.kr = self.motor_results.motor_calc.klr_
+
+        self.gs = self.motor_results.motor_calc.gs_
+        self.gr = self.motor_results.motor_calc.gr_
+
         self.Ps = self.motor_results.motor_calc.Ps
         self.PAl = self.motor_results.motor_calc.PAl
         self.Pss = self.motor_results.motor_calc.Pss
         self.Pp = self.motor_results.motor_calc.Pp
         self.stator_losses = None
+        self.stator_fluxes = None
+        self.rotor_fluxes = None
         self.rotor_losses = None
 
     def connectCustomSignals(self):
@@ -304,27 +356,26 @@ class CalcResultsWidget(object):
         self.pal_val_qle.setText(str(self.PAl))
         self.pp_val_qle.setText(str(self.Pp))
         self.ps_val_qle.setText(str(self.Ps))
-        self.limit_qle.setText(str(self.limit))
+        self.ks_qle.setText(str(self.ks))
+        self.kr_qle.setText(str(self.kr))
+        self.gs_qle.setText(str(self.gs))
+        self.gr_qle.setText(str(self.gr))
+        self.stator_flux_d_rbtn.click()
 
     def rbtns_toggled(self):
         if self.stator_flux_d_rbtn.isChecked() and self.activeState != "STATOR":
-            print("Stojan!")
             self.activeState = "STATOR"
             self.show_stator_flux_d()
         elif self.rotor_flux_d_rbtn.isChecked() and self.activeState != "ROTOR":
-            print("Wirnik!")
             self.activeState = "ROTOR"
             self.show_rotor_flux_d()
         elif self.stator_losses_rbtn.isChecked() and self.activeState != "STATOR_LOSSES":
-            print("Straty w stojanie!")
             self.activeState = "STATOR_LOSSES"
             self.show_stator_losses()
         elif self.rotor_losses_rbtn.isChecked() and self.activeState != "ROTOR_LOSSES":
-            print("Straty w wirniku!")
             self.activeState = "ROTOR_LOSSES"
             self.show_rotor_losses()
 
-    # TODO: Add save and load for file / DB
     def show_help_dialog(self):
         self.help_dialog = HelpDialog()
         self.help_dialog.show()
@@ -348,8 +399,8 @@ class CalcResultsWidget(object):
             Utils.show_error_box(title="Błędny format pliku", text="Proszę wybrać format pliku .npz!", parent=self.Form)
             return
         else:
-            self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses = NumpyDataTransfer.import_data(
-                filename)
+            self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
+            self.rotor_losses = NumpyDataTransfer.import_data(filename)
             Utils.show_msg_box(title="Zapis danych", text="Pomyślnie wczytano dane.", parent=self.Form)
             self.updateLosses()
 
@@ -360,12 +411,24 @@ class CalcResultsWidget(object):
         else:
             Utils.show_error_box(title="Zapis danych", text="Wystąpił błąd podczas próby zapisu do bazy danych!")
 
-    # TODO: ADD ERROR CHECKING
     def load_from_DB(self):
+        availabe_ids = self.show_available_ids()
         id = Utils.get_int_input_box(self.Form)
-        self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses = DBDataTransfer.import_data(
-            id)
-        self.updateLosses()
+        print("available_id typ = ", type(availabe_ids[0]))
+        print("id typ = ", type(id))
+        if id not in availabe_ids:
+            Utils.show_error_box(title="Błędna wartość", text="Proszę podać wartość z zakresu:" + str(availabe_ids))
+            return
+        self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
+        self.rotor_losses, self.stator_fluxes, self.rotor_fluxes = DBDataTransfer.import_data(id)
+        if self.limit is not None:
+            Utils.show_msg_box(title="Odczyt", text="Pomyślnie odczytano dane z DB.")
+            self.updateLosses()
+
+    def show_available_ids(self):
+        available_ids = list(x[0] for x in Queries.get_available_ids())
+        Utils.show_msg_box(title="Dostępne id", text="Lista dostępnych id:" + str(available_ids))
+        return available_ids
 
     # TODO: MOVE TO SEPARATE CLASS
     def save_to_json(self):
@@ -387,7 +450,7 @@ class CalcResultsWidget(object):
         print(filename)
         if filename:
             print("Odczytujemy dane z JSONA")
-            self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses \
+            self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses \
                 = JSONDataTransfer.import_data(filename)
             if self.limit is not None:
                 print("Powinno się pojawić okienko")
@@ -395,16 +458,18 @@ class CalcResultsWidget(object):
                 self.updateLosses()
 
     def show_stator_flux_d(self):
-        self.data = self.motor_results.motor_calc.stator_fluxes()
+        if self.stator_fluxes is None:
+            self.stator_fluxes = self.motor_results.motor_calc.stator_fluxes()
         self.header = ["vs", "Bvs"]
-        self.model = CalcTabModel(self.data, None, self.header)
+        self.model = CalcTabModel(self.stator_fluxes, None, self.header)
         self.calc_tabview.setModel(self.model)
         self.setCellSizes()
 
     def show_rotor_flux_d(self):
-        self.data = self.motor_results.motor_calc.rotor_fluxes()
+        if self.rotor_fluxes is None:
+            self.rotor_fluxes = self.motor_results.motor_calc.rotor_fluxes()
         self.header = ["vr", "Bvr"]
-        self.model = CalcTabModel(self.data, None, self.header)
+        self.model = CalcTabModel(self.rotor_fluxes, None, self.header)
         self.calc_tabview.setModel(self.model)
         self.setCellSizes()
 

@@ -13,6 +13,10 @@ class LossesDecoder:
     def decode(self):
         try:
             self.limit = self.data["Limit"]
+            self.kls = self.data["kls"]
+            self.klr = self.data["klr"]
+            self.gs = self.data["gs"]
+            self.gr = self.data["gr"]
             self.Ps = self.data["Ps"]
             self.PAl = self.data["PAl"]
             self.Pss = self.data["Pss"]
@@ -33,10 +37,14 @@ class LossesDecoder:
 
         except KeyError:
             raise json.JSONDecodeError
-        return self.limit, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses
+        return self.limit, self.kls, self.klr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses
 
     def printDecoded(self):
         print("Limit =", self.limit)
+        print("kls =", self.kls)
+        print("klr =", self.klr)
+        print("gs =", self.gs)
+        print("gr =", self.gr)
         print("Ps =", self.Ps)
         print("PAl =", self.PAl)
         print("Pss =", self.Pss)

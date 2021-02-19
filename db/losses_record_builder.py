@@ -1,9 +1,10 @@
 from model.losses import Losses
 import numpy as np
 import itertools
+from db.record_builder_interface import RecordBuilderInterface
 
 
-class LossesRecordBuilder:
+class LossesRecordBuilder(RecordBuilderInterface):
 
     @staticmethod
     def build_record(loss: Losses, id: int):

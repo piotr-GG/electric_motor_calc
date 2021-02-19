@@ -29,12 +29,12 @@ class JSONDataTransfer(DataStorageInterface):
     def export_data(data:MotorCalc, destination: str):
         if destination == "":
             destination = "results_" + dt.datetime.today().strftime("%d-%m-%y %X").replace(":", ".")
-        keys = ["Limit", "Ps", "PAl", "Pss", "Pp", "stator_losses", "rotor_losses"]
+        keys = ["Limit", "kls", "klr", "gs", "gr", "Ps", "PAl", "Pss", "Pp", "stator_losses", "rotor_losses"]
 
         stator_losses = data.stator_losses_serializable()
         rotor_losses = data.rotor_losses_serializable()
 
-        vals = [data.limit, data.Ps, data.PAl,
+        vals = [data.limit, data.kls_, data.klr_, data.gs_, data.gr_, data.Ps, data.PAl,
                 data.Pss, data.Pp, stator_losses, rotor_losses]
 
         f_cont = OrderedDict(zip(keys, vals))
