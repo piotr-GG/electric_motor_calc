@@ -1,4 +1,6 @@
 import json
+
+from model.flux_density import FluxDensity
 from model.losses import Losses
 import numpy as np
 
@@ -35,9 +37,20 @@ class LossesDecoder:
             self.rotor_losses = (Losses(np.array(self.vr, dtype=int), np.array(self.pssv, dtype="float64")),
                                  Losses(np.array(self.vr, dtype=int), np.array(self.ppv, dtype="float64")))
 
+            self.stator_fluxes = self.data["stator_fluxes"]
+            self.vs = self.stator_fluxes["vs"]
+            self.Bs = self.stator_fluxes["Bs"]
+            self.stator_fluxes = (FluxDensity(np.array(self.vs, dtype=int), np.array(self.Bs, dtype="float64")))
+
+            self.rotor_fluxes = self.data["rotor_fluxes"]
+            self.vr = self.rotor_fluxes["vr"]
+            self.Br = self.rotor_fluxes["Br"]
+            self.rotor_fluxes = (FluxDensity(np.array(self.vr, dtype=int), np.array(self.Br, dtype="float64")))
+
         except KeyError:
             raise json.JSONDecodeError
-        return self.limit, self.kls, self.klr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses
+        return self.limit, self.kls, self.klr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, \
+            self.stator_losses, self.rotor_losses, self.stator_fluxes, self.rotor_fluxes
 
     def printDecoded(self):
         print("Limit =", self.limit)

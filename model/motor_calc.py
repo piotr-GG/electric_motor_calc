@@ -619,6 +619,14 @@ class MotorCalc:
         losses_pssv, losses_ppv = self.rotor_losses()
         return {"vr": losses_pssv.order, "pssv": losses_pssv.losses, "ppv": losses_ppv.losses}
 
+    def stator_fluxes_serializable(self):
+        stator_fluxes = self.stator_fluxes()
+        return {"vs": stator_fluxes.order, "Bs": stator_fluxes.flux_dens}
+
+    def rotor_fluxes_serializable(self):
+        rotor_fluxes = self.rotor_fluxes()
+        return {"vr": rotor_fluxes.order, "Br": rotor_fluxes.flux_dens}
+
     def __str__(self):
         txt = ""
         pl_eng_dict = {True: "Tak", False: "Nie"}

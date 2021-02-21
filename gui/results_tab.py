@@ -360,6 +360,7 @@ class CalcResultsWidget(object):
         self.kr_qle.setText(str(self.kr))
         self.gs_qle.setText(str(self.gs))
         self.gr_qle.setText(str(self.gr))
+        self.activeState = ""
         self.stator_flux_d_rbtn.click()
 
     def rbtns_toggled(self):
@@ -395,14 +396,16 @@ class CalcResultsWidget(object):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         filename, _ = QFileDialog.getOpenFileName(self.Form, "Wybierz plik", ROOT_DIR + "/npz/")
-        if not filename.endswith(".npz"):
-            Utils.show_error_box(title="Błędny format pliku", text="Proszę wybrać format pliku .npz!", parent=self.Form)
-            return
-        else:
-            self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
-            self.rotor_losses = NumpyDataTransfer.import_data(filename)
-            Utils.show_msg_box(title="Zapis danych", text="Pomyślnie wczytano dane.", parent=self.Form)
-            self.updateLosses()
+        if filename:
+            if not filename.endswith(".npz"):
+                Utils.show_error_box(title="Błędny format pliku", text="Proszę wybrać format pliku .npz!",
+                                     parent=self.Form)
+                return
+            else:
+                self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
+                self.rotor_losses, self.stator_fluxes, self.rotor_fluxes = NumpyDataTransfer.import_data(filename)
+                Utils.show_msg_box(title="Zapis danych", text="Pomyślnie wczytano dane.", parent=self.Form)
+                self.updateLosses()
 
     def save_to_DB(self):
         id_added = DBDataTransfer.export_data(self.motor_results.motor_calc)
@@ -416,14 +419,15 @@ class CalcResultsWidget(object):
         id = Utils.get_int_input_box(self.Form)
         print("available_id typ = ", type(availabe_ids[0]))
         print("id typ = ", type(id))
-        if id not in availabe_ids:
-            Utils.show_error_box(title="Błędna wartość", text="Proszę podać wartość z zakresu:" + str(availabe_ids))
-            return
-        self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
-        self.rotor_losses, self.stator_fluxes, self.rotor_fluxes = DBDataTransfer.import_data(id)
-        if self.limit is not None:
-            Utils.show_msg_box(title="Odczyt", text="Pomyślnie odczytano dane z DB.")
-            self.updateLosses()
+        if id:
+            if id not in availabe_ids:
+                Utils.show_error_box(title="Błędna wartość", text="Proszę podać wartość z zakresu:" + str(availabe_ids))
+                return
+            self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
+            self.rotor_losses, self.stator_fluxes, self.rotor_fluxes = DBDataTransfer.import_data(id)
+            if self.limit is not None:
+                Utils.show_msg_box(title="Odczyt", text="Pomyślnie odczytano dane z DB.")
+                self.updateLosses()
 
     def show_available_ids(self):
         available_ids = list(x[0] for x in Queries.get_available_ids())
@@ -450,8 +454,8 @@ class CalcResultsWidget(object):
         print(filename)
         if filename:
             print("Odczytujemy dane z JSONA")
-            self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, self.rotor_losses \
-                = JSONDataTransfer.import_data(filename)
+            self.limit, self.ks, self.kr, self.gs, self.gr, self.Ps, self.PAl, self.Pss, self.Pp, self.stator_losses, \
+            self.rotor_losses, self.stator_fluxes, self.rotor_fluxes = JSONDataTransfer.import_data(filename)
             if self.limit is not None:
                 print("Powinno się pojawić okienko")
                 Utils.show_msg_box(title="Odczyt", text="Pomyślnie odczytano dane z JSONa.")
