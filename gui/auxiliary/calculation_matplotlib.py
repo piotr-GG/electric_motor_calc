@@ -1,10 +1,17 @@
+from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.uic.properties import QtCore
+
 from model.motor import Motor
 from model.motor_calc import MotorCalc
 import matplotlib.pyplot as plt
 
 
-class CalculateMatplotlib:
+class CalculateMatplotlib(QThread):
+    _signal = pyqtSignal(int)
+
     def __init__(self, limit_lower, limit_upper, motor):
+        super(CalculateMatplotlib, self).__init__()
         if isinstance(limit_lower, (int, float)) and isinstance(limit_upper, (int, float)):
             if limit_lower >= 0:
                 if int(limit_lower) < int(limit_upper):
@@ -26,6 +33,12 @@ class CalculateMatplotlib:
         self.__Pp = list()
         self.__limits = list()
         self.fig = None
+
+        self.finished.connect(self.plot_losses)
+
+    @property
+    def signal(self):
+        return type(self)._signal
 
     @property
     def limit_lower(self):
@@ -52,19 +65,27 @@ class CalculateMatplotlib:
     def motor(self, value):
         self.__motor = value
 
-    def calculate_losses(self):
+    def run(self):
         step_count = 10
-        step_val = int((self.limit_upper - self.limit_lower)/step_count)
-        for i in range(self.limit_lower, self.limit_upper + 1, step_val):
+        step_val = int((self.limit_upper - self.limit_lower) / step_count) or 1
+        step_range = range(self.limit_lower, self.limit_upper + 1, step_val)
+        for i in step_range:
             motor_calc = MotorCalc(self.motor, limit=i)
             motor_calc.calculate()
             Ps, PAl, Pss, Pp = motor_calc.get_motor_losses()
-
             self.__Ps.append(Ps)
             self.__PAl.append(PAl)
             self.__Pss.append(Pss)
             self.__Pp.append(Pp)
             self.__limits.append(i)
+
+            if i == step_range[len(step_range) - 1]:
+                self._signal.emit(100)
+                print("koniec!")
+            else:
+                val_to_send = (i / step_range[len(step_range) - 1]) * 100
+                self._signal.emit(val_to_send)
+                print("wysyłanie ", val_to_send )
         print(self.__limits)
 
     def plot_losses(self):
@@ -83,8 +104,5 @@ class CalculateMatplotlib:
 if __name__ == "__main__":
     test_motor = Motor()
     t = CalculateMatplotlib(1, 100, test_motor)
-    t.calculate_losses()
+    t.run()
     t.plot_losses()
-
-
-

@@ -287,6 +287,15 @@ class CalcResultsWidget(object):
         Form.setTabOrder(self.load_from_json_pbtn, self.save_to_DB_pbtn)
         Form.setTabOrder(self.save_to_DB_pbtn, self.load_from_DB_pbtn)
 
+        self.pss_val_qle.setReadOnly(True)
+        self.pal_val_qle.setReadOnly(True)
+        self.pp_val_qle.setReadOnly(True)
+        self.ps_val_qle.setReadOnly(True)
+        self.ks_qle.setReadOnly(True)
+        self.kr_qle.setReadOnly(True)
+        self.gs_qle.setReadOnly(True)
+        self.gr_qle.setReadOnly(True)
+
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Wyniki obliczeń"))
@@ -350,7 +359,6 @@ class CalcResultsWidget(object):
         self.save_to_json_pbtn.clicked.connect(self.save_to_json)
         self.load_from_json_pbtn.clicked.connect(self.load_from_json)
 
-    # TODO: ADD SETTING NEW MODEL FOR TABLE
     def updateLosses(self):
         self.pss_val_qle.setText(str(self.Pss))
         self.pal_val_qle.setText(str(self.PAl))
