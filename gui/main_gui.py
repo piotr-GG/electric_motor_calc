@@ -23,8 +23,6 @@ from xlsx.excel_parser import ExcelParser
 from data_transfer.db_data_transfer import DBDataTransfer
 
 
-# TODO: ADD IMPORT BUTTON FOR MOTOR PARAMETERS
-
 class MainGUI(object):
     spin_box_min_wdth = 50;
 
@@ -111,13 +109,13 @@ class MainGUI(object):
         self.limit_upper_spinbox.setGeometry(QtCore.QRect(220, 60, 61, 21))
         self.limit_upper_spinbox.setObjectName("limit_upper_spinbox")
         self.limit_label = QtWidgets.QLabel(self.groupBox)
-        self.limit_label.setGeometry(QtCore.QRect(160, 20, 61, 21))
+        self.limit_label.setGeometry(QtCore.QRect(120, 20, 120, 21))
         self.limit_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.limit_label.setObjectName("label_5")
+        self.limit_label.setObjectName("limit_label")
         self.limit_min_label = QtWidgets.QLabel(self.groupBox)
         self.limit_min_label.setGeometry(QtCore.QRect(40, 60, 61, 21))
         self.limit_min_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.limit_min_label.setObjectName("label_6")
+        self.limit_min_label.setObjectName("limit_min")
         self.limit_max_label = QtWidgets.QLabel(self.groupBox)
         self.limit_max_label.setGeometry(QtCore.QRect(160, 60, 61, 21))
         self.limit_max_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -157,7 +155,7 @@ class MainGUI(object):
         self.gr_label.setText(_translate("MainWindow", "gr"))
         self.calculate_pbtn.setText(_translate("MainWindow", "Wykonaj obliczenia"))
         self.groupBox.setTitle(_translate("MainWindow", "Badanie wpływu zakresu harmonicznych na straty"))
-        self.limit_label.setText(_translate("MainWindow", "Limit"))
+        self.limit_label.setText(_translate("MainWindow", "Zakres harmonicznych"))
         self.limit_min_label.setText(_translate("MainWindow", "min"))
         self.limit_max_label.setText(_translate("MainWindow", "max"))
         self.matplotlib_btn.setText(_translate("MainWindow", "Zbadaj wpływ"))
@@ -205,7 +203,7 @@ class MainGUI(object):
             self.prog_bar_widget.show()
             self.matplotlib_obj.start()
         else:
-            Utils.show_error_box(text= "Wartość limit min nie może być większa lub równa wartości limit max",
+            Utils.show_error_box(text="Wartość limit min nie może być większa lub równa wartości limit max",
                                  title="Błędne wartości")
 
     def runCalculations(self):
